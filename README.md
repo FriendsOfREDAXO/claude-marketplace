@@ -24,6 +24,7 @@ Add addon-specific plugins based on what your project uses:
 /plugin install redaxo-yform@redaxo-marketplace
 /plugin install redaxo-yrewrite@redaxo-marketplace
 /plugin install redaxo-structure@redaxo-marketplace
+/plugin install redaxo-search-it@redaxo-marketplace
 ```
 
 ## Available Plugins
@@ -36,6 +37,7 @@ Add addon-specific plugins based on what your project uses:
 | `redaxo-yrewrite` | Domains, pretty URLs, redirects, multi-language SEO | If `yrewrite` is installed |
 | `redaxo-ycom` | Frontend user auth, login/registration/password forms, groups, media protection, OTP/2FA, tokens, SAML/OAuth2/CAS | If `ycom` is installed |
 | `redaxo-api-addon` | FriendsOfRedaxo/api – Bearer-token REST API for articles/categories/slices/modules/templates/media | If you call (or extend) the `api` addon |
+| `redaxo-search-it` | Full-text search, indexing, search modules, highlighting, autocomplete, similarity search, extension points | If `search_it` is installed |
 
 ## How it works
 
