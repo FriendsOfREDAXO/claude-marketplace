@@ -208,6 +208,36 @@ echo $fragment->parse('core/page/section.php');
 
 Use `rex_be_controller::getCurrentPagePart(N)` to inspect the current subpage path if you need conditional logic.
 
+### `pages/index.php` dispatcher (required for top-level `page:` with subpages)
+
+When `package.yml` uses the singular `page:` key with `subpages`, REDAXO requires a `pages/index.php` file for the main entry. Without it the page errors out with:
+
+> Package "my_addon": the page path "pages/index.php" neither exists as standalone path nor as package subpath ".../pages/index.php"
+
+The convention (used by core addons like `cronjob` and `backup`) is a thin dispatcher that renders the page title **once** and includes the active subpage file:
+
+```php
+<?php
+// pages/index.php
+echo rex_view::title($this->i18n('title'));
+rex_be_controller::includeCurrentPageSubPath();
+```
+
+The subpage files (`pages/list.php`, `pages/settings.php`) then render **only their body** — calling `rex_view::title()` in a subpage when the dispatcher already does prints the title twice.
+
+### Mounted pages — `pages:` (plural) with dot-notation files
+
+Use the plural `pages:` key to mount additional entries **under existing paths** (e.g. into REDAXO's system menu), separately from your main `page:` entry:
+
+```yaml
+pages:
+    system/log/my_addon:
+        title: 'My Addon Log'
+        perm: admin[]
+```
+
+Mounted page files use **dot-notation matching the path**: slashes become dots, so `system/log/my_addon` → `pages/system.log.my_addon.php`. This naming only applies to the plural `pages:` form — plain `pages/<subpage>.php` is still correct for subpages of your own top-level `page:`.
+
 ## Language files
 
 ```
@@ -251,9 +281,10 @@ When building a widget that gets embedded on third-party sites:
 7. **Forgot fragment directory** registration in `boot.php`.
 8. **Missing `exit`** after `rex_response::sendJson()` → REDAXO appends HTML to JSON.
 9. **Inline `<style>` or `<script>` tags** → blocked by CSP. Always external files via `rex_view::addCssFile()` / `rex_view::addJsFile()`.
-10. **Putting non-idempotent code in `install.php`** without checks – the user may re-install.
-11. **Hardcoding asset paths** instead of `rex_url::addonAssets()` – breaks subdirectory deployments.
-12. **Skipping `perm:` declarations** – any backend user can then access the page.
+10. **Top-level `page:` with subpages but no `pages/index.php`** → REDAXO errors on the main entry ("page path ... neither exists ..."). Add a dispatcher (`echo rex_view::title(...); rex_be_controller::includeCurrentPageSubPath();`).
+11. **Putting non-idempotent code in `install.php`** without checks – the user may re-install.
+12. **Hardcoding asset paths** instead of `rex_url::addonAssets()` – breaks subdirectory deployments.
+13. **Skipping `perm:` declarations** – any backend user can then access the page.
 
 ## Testing & debugging
 
