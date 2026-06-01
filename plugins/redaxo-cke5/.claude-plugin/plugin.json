@@ -1,0 +1,12 @@
+{
+  "name": "redaxo-cke5",
+  "version": "0.1.0",
+  "description": "CKE5 addon support for Claude Code: custom styles, editor CSS, frontend SCSS, profile configuration",
+  "author": {
+    "name": "Friends Of REDAXO"
+  },
+  "homepage": "https://github.com/FriendsOfREDAXO/cke5",
+  "repository": "https://github.com/FriendsOfREDAXO/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["redaxo", "cke5", "wysiwyg", "editor", "styles"]
+}

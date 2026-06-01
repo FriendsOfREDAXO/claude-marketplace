@@ -7,7 +7,7 @@
     "email": "info@redaxo.org"
   },
   "metadata": {
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
@@ -116,6 +116,30 @@
         "name": "Friends Of REDAXO"
       },
       "homepage": "https://github.com/FriendsOfREDAXO/mform",
+      "license": "MIT"
+    },
+    {
+      "name": "redaxo-sprog",
+      "source": "./plugins/redaxo-sprog",
+      "description": "Sprog addon: wildcard-based multi-language text management, setup scripts for rex_sprog_wildcard",
+      "category": "cms",
+      "tags": ["redaxo", "sprog", "i18n", "wildcards", "translations"],
+      "author": {
+        "name": "Friends Of REDAXO"
+      },
+      "homepage": "https://github.com/FriendsOfREDAXO/sprog",
+      "license": "MIT"
+    },
+    {
+      "name": "redaxo-cke5",
+      "source": "./plugins/redaxo-cke5",
+      "description": "CKE5 addon: custom editor styles, rex_cke5_styles DB setup, editor preview CSS, profile configuration",
+      "category": "cms",
+      "tags": ["redaxo", "cke5", "wysiwyg", "editor", "styles"],
+      "author": {
+        "name": "Friends Of REDAXO"
+      },
+      "homepage": "https://github.com/FriendsOfREDAXO/cke5",
       "license": "MIT"
     }
   ]

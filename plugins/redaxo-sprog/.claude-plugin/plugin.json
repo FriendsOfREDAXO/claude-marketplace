@@ -1,0 +1,12 @@
+{
+  "name": "redaxo-sprog",
+  "version": "0.1.0",
+  "description": "Sprog addon support for Claude Code: wildcard management, multi-language text setup scripts",
+  "author": {
+    "name": "Friends Of REDAXO"
+  },
+  "homepage": "https://github.com/FriendsOfREDAXO/sprog",
+  "repository": "https://github.com/FriendsOfREDAXO/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["redaxo", "sprog", "i18n", "wildcards", "translations"]
+}
