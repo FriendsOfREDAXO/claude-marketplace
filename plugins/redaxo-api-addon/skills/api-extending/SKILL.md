@@ -1,6 +1,6 @@
 ---
 name: api-extending
-description: Adding custom REST routes to the FriendsOfRedaxo/api addon (v1.2+) from your own addon — building a RoutePackage subclass, registering routes, scope management, the `Body`/`query` schema keys, request-context caveats (auth runs in frontend context, isBackend() returns false, PRE-EPs that call rex::requireUser() fail under Bearer), and the addon's exact-mirror-of-core convention. Use when the user adds endpoints to the api addon, exposes their own data over the same auth/scope mechanism, or runs into "EP fires only in backend but I need it from the API" / "rex::requireUser threw" problems.
+description: Adding custom REST routes to the FriendsOfRedaxo/api addon (v1.2+) from your own addon — building a RoutePackage subclass, registering routes, scope management, the `Body`/`query` schema keys, request-context caveats (auth runs in frontend context, isBackend() returns false, PRE-EPs that call rex::requireUser() fail under Bearer), and the addon's exact-mirror-of-core convention. Use when the user adds endpoints to the api addon, exposes their own data over the same auth/scope mechanism, runs into "EP fires only in backend but I need it from the API" / "rex::requireUser threw" problems, or says "eigene Route registrieren", "API um eigenen Endpunkt erweitern", "RoutePackage bauen".
 ---
 
 # Extending the `api` Addon (v1.2+)
