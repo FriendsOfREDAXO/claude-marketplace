@@ -152,5 +152,5 @@ For frontend navigation, `isOnline()` is enough – the structure addon already 
 - Building the active-state check by string-comparing names instead of IDs – breaks when categories share a name.
 - Generating a navigation tree with thousands of categories without caching – every page render walks the full tree.
 - Forgetting `isOnline()` on each level – offline parents whose children are online become reachable via direct URL but not from the menu.
-- Hardcoding category IDs in templates instead of using `rex_yrewrite::getCurrentDomain()->getMountId()` for "below this domain's root".
+- Hardcoding category IDs in templates instead of using `rex_yrewrite::getCurrentDomain()->getMountId()` for "below this domain's root". On multi-domain sites see the yrewrite-domains skill for the full domain-rooted navigation pattern.
 - Calling `getChildren()` without the `$ignore_offlines = true` flag in a public template, then leaking offline categories into navigation.
