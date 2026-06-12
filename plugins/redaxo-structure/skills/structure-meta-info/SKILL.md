@@ -12,7 +12,7 @@ The `structure/meta_info` plugin (ships with the structure addon) lets you add c
 - Media (`med_*` prefix)
 - Languages / clang (`clang_*` prefix)
 
-Fields are configured in the backend (Structure → Meta-Information). Each field has a name (matches the SQL column), a label, a type (text, textarea, select, radio, checkbox, legend, date, datestamp, REX_MEDIA_BUTTON, REX_MEDIALIST_BUTTON, REX_LINK_BUTTON, REX_LINKLIST_BUTTON), and an optional default.
+Fields are configured in the backend (Structure → Meta-Information). Each field has a name (matches the SQL column), a label, a type (text, textarea, select, radio, checkbox, media/medialist/link/linklist picker, date, datetime, time, legend), and an optional default. The full list of `type_id` constants lives in `rex_metainfo_default_type` — see the redaxo-metainfo-fields skill for the reference table.
 
 The prefix tells REDAXO which entity it belongs to – `art_my_field` adds a column to `rex_article`, `cat_my_field` adds it to `rex_article` (categories share the table), `med_my_field` extends `rex_media`.
 
@@ -69,33 +69,27 @@ rex_clang::reset(); // clear in-process clang cache
 
 The meta_info plugin exposes a small API for declaring fields without clicking through the backend. This is the right approach for distributable addons.
 
+The target table is **derived from the field name's prefix** (`art_*` → articles, `cat_*` → categories, `med_*` → media, `clang_*` → languages); there is no explicit table argument. Parameter order is `(title, name, priority, attributes, type, default, params, validate, restrictions, callback)`:
+
 ```php
 <?php
 // install.php
 if (rex_plugin::get('structure', 'meta_info')->isAvailable()) {
     rex_metainfo_add_field(
-        'rex_articles',                 // legacy table identifier
-        'art_subtitle',                 // field name (must include prefix)
-        'Subtitle',                     // label
-        1,                              // type_id (1 = text, 2 = textarea, 3 = select, 4 = radio, 5 = checkbox, 6 = REX_MEDIA_BUTTON, 7 = REX_MEDIALIST_BUTTON, 8 = REX_LINK_BUTTON, 9 = REX_LINKLIST_BUTTON, 10 = date, 11 = datestamp, 12 = legend)
-        '',                             // params (e.g. dropdown options "1,Yes|0,No")
-        '',                             // default
-        '',                             // validate regex
-        ['my_addon_perm']               // permission requirement (empty = visible to all)
+        'Subtitle',                              // $title (backend label)
+        'art_subtitle',                          // $name (prefix decides the target table)
+        100,                                     // $priority
+        '',                                      // $attributes (raw input attrs)
+        rex_metainfo_default_type::TEXT,         // $type
+        '',                                      // $default
+        null,                                    // $params (option list for SELECT/RADIO/CHECKBOX)
+        null,                                    // $validate
+        '',                                      // $restrictions (role/perm string, '' = visible to all)
     );
 }
 ```
 
-The legacy table identifier maps as follows:
-
-| Entity | First arg |
-|---|---|
-| Article | `'rex_articles'` |
-| Category | `'rex_categories'` |
-| Media | `'rex_media'` |
-| Clang | `'rex_clang'` |
-
-(These string names are historic – they don't change with table prefix changes.)
+The full constants list is in the redaxo-metainfo-fields skill. For an idempotent re-runnable variant (the function silently no-ops if the field already exists), see the pattern documented there.
 
 To remove a field on uninstall:
 
@@ -115,7 +109,7 @@ YRewrite ships these by default; they're already added when YRewrite is installe
 - `art_yrewrite_description` – meta description
 - `art_yrewrite_index` – `index` / `noindex`
 - `art_yrewrite_canonical_url` – canonical override
-- `art_yrewrite_image` – social-share image (REX_MEDIA_BUTTON)
+- `art_yrewrite_image` – social-share image (`REX_MEDIA_WIDGET`)
 
 Don't redefine them in your own addon.
 
