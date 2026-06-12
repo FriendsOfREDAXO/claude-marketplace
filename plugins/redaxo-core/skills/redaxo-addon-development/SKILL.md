@@ -309,6 +309,15 @@ When building a widget that gets embedded on third-party sites:
 11. **Putting non-idempotent code in `install.php`** without checks – the user may re-install.
 12. **Hardcoding asset paths** instead of `rex_url::addonAssets()` – breaks subdirectory deployments.
 13. **Skipping `perm:` declarations** – any backend user can then access the page.
+14. **Backend download links broken by PJAX** – the backend uses PJAX, which intercepts `<a href>` clicks and loads the response into the current page instead of triggering a download. `rex_api_function` returning binary data doesn't help (REDAXO expects a `rex_api_result` object, not raw output), and `target="_blank"` is unreliable across PJAX configurations. For small payloads (SVG, CSV, generated text) the cleanest fix is to inline the data as a `data:` URL on the link and set `download="filename.ext"` — no server round-trip, PJAX leaves it alone:
+
+    ```php
+    $svg = '<svg ...>...</svg>';
+    $href = 'data:image/svg+xml;base64,' . base64_encode($svg);
+    echo '<a href="' . rex_escape($href, 'html_attr') . '" download="export.svg" class="btn btn-xs">SVG</a>';
+    ```
+
+    For larger payloads, render a standalone PHP entry point outside the backend page tree (or use a `rex_api_function` that hands back a `rex_api_result` with a redirect to a streaming endpoint).
 
 ## Testing & debugging
 
