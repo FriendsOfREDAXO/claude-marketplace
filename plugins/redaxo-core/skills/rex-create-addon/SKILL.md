@@ -1,6 +1,6 @@
 ---
 name: rex-create-addon
-description: Scaffold a complete REDAXO addon skeleton with package.yml, boot.php, install/uninstall, lang files, and an optional backend page. Creates real files in redaxo/src/addons/. Invoke as /redaxo-core:rex-create-addon when the user wants a new addon scaffolded.
+description: Scaffold a complete REDAXO addon skeleton — package.yml, boot.php, install/uninstall.php, lang files, optional backend page — under redaxo/src/addons/. Distinct from rex-create-module (which scaffolds a single content module). Invoke as /redaxo-core:rex-create-addon when the user wants a new addon scaffolded, says "neues Addon", "Addon erstellen", "Addon-Gerüst", "Addon erzeugen", or asks "how do I start a new REDAXO addon".
 ---
 
 You are scaffolding a complete REDAXO addon under `redaxo/src/addons/`.
