@@ -1,6 +1,6 @@
 ---
 name: mform-yform
-description: Using MForm-provided YForm value types in YForm table definitions and YForm forms – custom_link, custom_link_multi, color_swatch, imagelist, medialist, linklist value types. Covers how to add these fields programmatically (rex_yform_manager_table_api::setTableField) and via tableset JSON, their stored value formats, how to read values via YOrm datasets, and ytemplates used for rendering in the backend. Use when the user adds a custom_link, color_swatch, imagelist, medialist, or linklist field to a YForm table, uses these field types in a YForm form, or asks how to render MForm widget values stored in a YForm database column.
+description: Using MForm-provided YForm value types in YForm table definitions and YForm forms – custom_link, custom_link_multi, color_swatch, imagelist, medialist, linklist value types. Covers how to add these fields programmatically (rex_yform_manager_table_api::setTableField) and via tableset JSON, their stored value formats, how to read values via YOrm datasets, and ytemplates used for rendering in the backend. Use when the user adds a custom_link, color_swatch, imagelist, medialist, or linklist field to a YForm table, uses these field types in a YForm form, asks how to render MForm widget values stored in a YForm database column, or says "MForm-Feldtyp in YForm-Tabelle", "Custom-Link-Spalte", "Color-Swatch im Backend", "Galerie-Feld", "Datei-Liste".
 ---
 
 # MForm YForm Value Types
@@ -19,6 +19,16 @@ MForm registers custom value types that extend the YForm field palette. They app
 | `imagelist` | Image gallery picker (comma-separated filenames) | `img1.jpg,img2.png` |
 | `medialist` | Multi-file media picker (comma-separated filenames) | `file1.pdf,file2.pdf` |
 | `linklist` | Multiple internal article links (comma-separated IDs) | `12,14,22` |
+
+## Tableset JSON ↔ PHP definition
+
+The three ways to define a field — `rex_yform_manager_table_api::setTableField()`, `$yform->setValueField()`, and a Tableset JSON export — share the same key set. To go from the PHP form (used throughout this skill) to a Tableset JSON entry:
+
+1. **Add `db_type`.** Use `text` for everything except `color_swatch`, which fits in `varchar(191)`.
+2. **Add `table_name`** with the full table including the `rex_` prefix (`"rex_my_table"`).
+3. **Stringify every value.** Booleans become `"0"`/`"1"`, integers become `"3"`. JSON-in-JSON values (`color_swatch.swatches`) need their inner quotes escaped (`"swatches": "{\"#fff\":\"Weiß\"}"`).
+
+The Tableset JSON blocks below are shown for `custom_link` and `color_swatch` as concrete references (the quoting edge cases differ). For the other four types, take the PHP definition and apply the three rules above.
 
 ---
 
@@ -120,24 +130,7 @@ rex_yform_manager_table_api::setTableField(rex::getTable('my_table'), [
 
 ### Tableset JSON
 
-```json
-{
-    "type_id": "value",
-    "type_name": "custom_link_multi",
-    "name": "links",
-    "label": "Links",
-    "db_type": "text",
-    "not_required": "1",
-    "intern": "1",
-    "external": "1",
-    "media": "1",
-    "mailto": "1",
-    "phone": "0",
-    "anchor": "0",
-    "btn_add": "Link hinzufügen",
-    "table_name": "rex_my_table"
-}
-```
+Same shape as `custom_link` plus the `btn_add` key — apply the translation rules above. `db_type: "text"`.
 
 ### Reading values in PHP
 
@@ -226,19 +219,7 @@ rex_yform_manager_table_api::setTableField(rex::getTable('my_table'), [
 
 ### Tableset JSON
 
-```json
-{
-    "type_id": "value",
-    "type_name": "imagelist",
-    "name": "gallery",
-    "label": "Galerie",
-    "db_type": "text",
-    "not_required": "1",
-    "types": "jpg,jpeg,png,webp,avif",
-    "category": "",
-    "table_name": "rex_my_table"
-}
-```
+Apply the translation rules above to the PHP definition. `db_type: "text"`.
 
 ### Reading values in PHP
 
@@ -273,22 +254,7 @@ rex_yform_manager_table_api::setTableField(rex::getTable('my_table'), [
 
 ### Tableset JSON
 
-```json
-{
-    "type_id": "value",
-    "type_name": "medialist",
-    "name": "downloads",
-    "label": "Downloads",
-    "db_type": "text",
-    "not_required": "1",
-    "types": "pdf,doc,docx",
-    "category": "",
-    "view": "list",
-    "views": "list,grid",
-    "toolbar": "horizontal",
-    "table_name": "rex_my_table"
-}
-```
+Apply the translation rules above to the PHP definition. `db_type: "text"`.
 
 ### Reading values in PHP
 
@@ -323,19 +289,7 @@ rex_yform_manager_table_api::setTableField(rex::getTable('my_table'), [
 
 ### Tableset JSON
 
-```json
-{
-    "type_id": "value",
-    "type_name": "linklist",
-    "name": "related",
-    "label": "Verwandte Artikel",
-    "db_type": "text",
-    "not_required": "1",
-    "category": "",
-    "toolbar": "horizontal",
-    "table_name": "rex_my_table"
-}
-```
+Apply the translation rules above to the PHP definition. `db_type: "text"`.
 
 ### Reading values in PHP
 
