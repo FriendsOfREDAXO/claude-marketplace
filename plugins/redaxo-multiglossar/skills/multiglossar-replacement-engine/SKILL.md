@@ -1,6 +1,6 @@
 ---
 name: multiglossar-replacement-engine
-description: MultiGlossar replacement engine internals - boot.php OUTPUT_FILTER hook, MultiGlossar\\Parser in lib/glossar/multiglossar.php, DOMDocument parsing, text_replace regex matching, replace_definition template placeholders, and URL namespace resolution via Url\\Profile/url_generator_profile. Use when the user debugs missing replacements, broken tooltip HTML, URL addon integration, or replacement performance.
+description: MultiGlossar replacement engine internals - boot.php OUTPUT_FILTER hook, the (internal) MultiGlossar\\Parser in lib/glossar/multiglossar.php, DOMDocument parsing, text_replace regex matching, replace_definition template placeholders, and URL namespace resolution via Url\\Profile/url_generator_profile. Stable integration is via OUTPUT_FILTER and the addon config — Parser is not a public API. Use when the user debugs missing replacements, broken tooltip HTML, URL addon integration, or replacement performance.
 ---
 
 # MultiGlossar Replacement Engine
@@ -19,6 +19,8 @@ Frontend replacement is executed in `boot.php` via `rex_extension::register('OUT
 This architecture avoids raw global string replacement and limits changes to parsed text nodes.
 
 ## Parser and DOM behavior
+
+> `MultiGlossar\Parser` is **internal**. Don't construct or call it from your own code — the stable integration points are the `OUTPUT_FILTER` hook (which the addon already registers) and the addon's config. The methods below are documented so you can read along when debugging, not as an API to invoke.
 
 Key parser methods:
 
