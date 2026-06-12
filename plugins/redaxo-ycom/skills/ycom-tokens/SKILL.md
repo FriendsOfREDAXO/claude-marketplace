@@ -27,6 +27,8 @@ ycom_user_token|token|validate|type|error_message
 - `create` – generates a token, stores it on the matched user, and exposes it as `REX_YFORM_DATA[field=token]` for the email template
 - `validate` – consumes a token from the URL; on success, the matching user becomes the current dataset (and is logged in for `login` and `password_reset` types)
 
+> **Fourth slot in `create` is documentation, not configuration.** Despite the `email_field` label, the `create` branch reads `value_pool['sql']['email']` directly — the slot is ignored at runtime. Always name the email form field literally `email`, regardless of what you put in the fourth slot.
+
 ## Direct login via token
 
 ### Article A — token generation form
@@ -88,7 +90,7 @@ ycom_user_token|token|create|register|email
 action|tpl2email|register_confirm|email|
 ```
 
-Important: the form **must contain a field literally named `email`**. The `create` branch of `ycom_user_token` reads from `value_pool['sql']['email']` directly — the fourth pipe slot is documented as `email_field` for clarity but is not evaluated by the current implementation. So: name the email field `email`, full stop.
+Important: the form must contain a field literally named `email` (see "Field syntax" above for why the fourth pipe slot doesn't help here).
 
 Confirmation:
 
