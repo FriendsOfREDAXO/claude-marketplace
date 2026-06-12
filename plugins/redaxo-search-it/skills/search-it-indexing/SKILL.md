@@ -1,6 +1,6 @@
 ---
 name: search-it-indexing
-description: Search It indexing – generating and managing the search index, reindex articles, index database columns, index files and PDFs, console commands search_it:reindex and search_it:clearCache, cronjobs, plaintext conversion, PlaintextConverter, PdfConverter. Use when the user asks about rebuilding the search index, indexing custom content, or the search returns stale results.
+description: Search It indexing – generating and managing the search index, reindex articles, index database columns, index files and PDFs, console commands search_it:reindex and search_it:clearCache, cronjobs, plaintext conversion via FriendsOfRedaxo\SearchIt\Plaintext\PlaintextConverter (configured through backend settings + SEARCH_IT_PLAINTEXT extension point) and PDF text extraction via FriendsOfRedaxo\SearchIt\Pdf\PdfConverter (requires pdftotext / poppler-utils on the server). Use when the user asks about rebuilding the search index, indexing custom content, or the search returns stale results.
 ---
 
 # Search It – Indexing
@@ -85,7 +85,7 @@ Useful for sites with frequently changing external data sources (e.g. DB columns
 
 ## Plaintext conversion
 
-Articles are fetched via HTTP (or socket), rendered, then converted to plaintext. The `PlaintextConverter` strips HTML, applies CSS selector exclusions, runs regex replacements and optionally parses Textile.
+Articles are fetched via HTTP (or socket), rendered, then converted to plaintext by `FriendsOfRedaxo\SearchIt\Plaintext\PlaintextConverter`. It strips HTML, applies CSS selector exclusions, runs regex replacements and optionally parses Textile. Settings + the `SEARCH_IT_PLAINTEXT` extension point are the supported ways to tune it — instantiating the converter directly is rarely necessary.
 
 Configure in backend: Settings > Plaintext settings:
 - **CSS selectors to exclude** – e.g. `nav, .no-search, footer` (content in these elements is not indexed)
@@ -119,7 +119,7 @@ Requires `pdftotext` (from `poppler-utils`) on the server:
 apt-get install poppler-utils    # Debian/Ubuntu
 ```
 
-Search It uses `PdfConverter` to extract text from PDF files in the media pool. Enable file indexing and add `pdf` to the allowed extensions in backend settings.
+Search It uses `FriendsOfRedaxo\SearchIt\Pdf\PdfConverter` (shells out to `pdftotext`) to extract text from PDF files in the media pool. Enable file indexing and add `pdf` to the allowed extensions in backend settings.
 
 ## Database tables
 
