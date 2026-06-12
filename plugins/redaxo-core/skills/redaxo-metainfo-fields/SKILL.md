@@ -42,9 +42,28 @@ $params = 'SELECT id, name FROM ' . rex::getTable('team_role') . ' ORDER BY name
 
 The first column becomes the option key, the second becomes the label.
 
+## Function signature
+
+`rex_metainfo_add_field()` has a non-obvious parameter order — the target table is **derived from the field name's prefix** (`art_*` → articles, `cat_*` → categories, `med_*` → media, `clang_*` → languages), there's no explicit table argument.
+
+```php
+rex_metainfo_add_field(
+    string  $title,         // backend label
+    string  $name,          // column name WITH prefix, e.g. 'cat_in_navi_top'
+    int     $priority,      // display order in the backend form
+    string  $attributes,    // raw input attributes, e.g. 'class="form-control"'
+    int     $type,          // type_id — see table below
+    string  $default,       // default value (still a string)
+    ?string $params   = null, // SELECT/RADIO/CHECKBOX options OR a SELECT-query
+    ?string $validate = null,
+    string  $restrictions = '',
+    ?string $callback = null,
+);
+```
+
 ## Idempotent setup pattern
 
-`rex_metainfo_add_field()` only **adds** — it doesn't update an existing field. For setup scripts that should be safe to re-run:
+`rex_metainfo_add_field()` only **adds** — it silently no-ops if a field with that name already exists, and it doesn't update `params`/`default`/etc. on subsequent runs. For setup scripts that should be safe to re-run:
 
 ```php
 $tableName = rex::getTable('metainfo_field');
@@ -55,17 +74,16 @@ $existing  = rex_sql::factory()->getArray(
 
 if (empty($existing)) {
     rex_metainfo_add_field(
-        'cat_in_navi_top',                      // name
-        'In top navi',                          // label
-        7,                                      // type_id (7 = SELECT)
-        ':–|1:Ja',                              // params
-        '',                                     // default
-        '',                                     // validate
-        '',                                     // restrictions
-        rex_metainfo_category_handler::PREFIX   // category prefix
+        'In top navi',         // $title (backend label)
+        'cat_in_navi_top',     // $name (must start with cat_/art_/med_/clang_)
+        100,                   // $priority
+        '',                                  // $attributes
+        rex_metainfo_default_type::SELECT,   // $type
+        '',                                  // $default
+        ':–|1:Ja',             // $params (option list)
     );
 } elseif ($existing[0]['params'] !== ':–|1:Ja') {
-    // UPDATE the row directly to fix params on existing field
+    // UPDATE the row directly to fix params on an existing field
     rex_sql::factory()
         ->setTable($tableName)
         ->setWhere(['id' => $existing[0]['id']])
@@ -97,21 +115,20 @@ $nav->get(0, 1, true, true);
 
 ## Type IDs reference
 
-| `type_id` | Field type |
-|---|---|
-| 1 | Text |
-| 2 | Textarea |
-| 3 | Legend (display only) |
-| 4 | Select (single) |
-| 5 | Radio |
-| 6 | Checkbox |
-| 7 | Select (with multiple support) |
-| 8 | Date |
-| 9 | Datetime |
-| 10 | Time |
-| 11 | REX_MEDIA_BUTTON |
-| 12 | REX_MEDIALIST_BUTTON |
-| 13 | REX_LINK_BUTTON |
-| 14 | REX_LINKLIST_BUTTON |
+Source of truth: `rex_metainfo_default_type` (`addons/metainfo/lib/default_type.php`). Prefer the constants over the raw integers — they survive any future re-ordering.
 
-Use `rex_metainfo_table_expander::PREFIX` for media metainfo and the matching constants for article/category/clang.
+| `type_id` | Constant | Field type |
+|---|---|---|
+| 1 | `rex_metainfo_default_type::TEXT` | Text |
+| 2 | `rex_metainfo_default_type::TEXTAREA` | Textarea |
+| 3 | `rex_metainfo_default_type::SELECT` | Select |
+| 4 | `rex_metainfo_default_type::RADIO` | Radio |
+| 5 | `rex_metainfo_default_type::CHECKBOX` | Checkbox |
+| 6 | `rex_metainfo_default_type::REX_MEDIA_WIDGET` | Media picker (single) |
+| 7 | `rex_metainfo_default_type::REX_MEDIALIST_WIDGET` | Media picker (multi) |
+| 8 | `rex_metainfo_default_type::REX_LINK_WIDGET` | Link picker (single) |
+| 9 | `rex_metainfo_default_type::REX_LINKLIST_WIDGET` | Link picker (multi) |
+| 10 | `rex_metainfo_default_type::DATE` | Date |
+| 11 | `rex_metainfo_default_type::DATETIME` | Datetime |
+| 12 | `rex_metainfo_default_type::LEGEND` | Legend (display-only separator) |
+| 13 | `rex_metainfo_default_type::TIME` | Time |
