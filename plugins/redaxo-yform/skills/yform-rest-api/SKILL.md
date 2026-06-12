@@ -1,6 +1,6 @@
 ---
 name: yform-rest-api
-description: YForm's built-in REST API – exposing YForm tables as JSON:API endpoints. Covers route registration via rex_yform_rest_route, GET filter/include/order/pagination params, JSON:API POST bodies, DELETE, token-based authentication, and CORS headers. Use when the user exposes a YForm table as a REST endpoint, configures token auth, customizes per-method field whitelists, or builds a frontend SPA that calls a YForm-backed API.
+description: YForm's built-in REST API – exposing YForm tables as JSON:API endpoints. Covers route registration via rex_yform_rest_route, GET filter/include/order/pagination params, JSON:API POST bodies, DELETE, token-based authentication, and CORS headers. Use when the user exposes a YForm table as a REST endpoint, configures token auth, customizes per-method field whitelists, builds a frontend SPA that calls a YForm-backed API, or says "REST-Endpoint", "JSON-API", "Token-Auth", "API-Aufrufe", "Endpunkt für YForm-Tabelle".
 ---
 
 # YForm REST API
