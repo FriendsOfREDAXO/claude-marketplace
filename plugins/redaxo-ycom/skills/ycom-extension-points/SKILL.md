@@ -56,6 +56,8 @@ Lower priority numbers run first. OTP runs before password change so a stale pas
 
 ### Custom injection
 
+The abstract base class is — verbatim, including the missing `s` — `rex_ycom_injection_abtract`. The typo is in the YCom source (`plugins/auth/lib/injections/abstract.php`), not in this skill. Use it as-is; `rex_ycom_injection_abstract` does not exist and would throw a fatal error.
+
 ```php
 class my_injection extends rex_ycom_injection_abtract {
     public function getRewrite(): bool|string {
