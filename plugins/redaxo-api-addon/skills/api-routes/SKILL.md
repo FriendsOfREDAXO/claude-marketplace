@@ -1,6 +1,6 @@
 ---
 name: api-routes
-description: Calling the FriendsOfRedaxo/api REST endpoints (v1.2+) — Bearer + Backend-Session auth, the route table for articles/categories/slices/modules/templates/languages/media/users/metainfo, the slice POST schema, OpenAPI spec, the unified `{data, meta}` list format, and a 401/404/405/500 diagnostic flow. Covers the Backend-mirror under `/api/backend/...`, multipart media upload, metainfo values for articles/categories/media/clangs, and yrewrite cache invalidation. Use when the user calls the api addon over HTTP, hits a confusing 401/404/405, syncs articles between systems via this API, or builds tooling around it.
+description: Calling the FriendsOfRedaxo/api REST endpoints (v1.2+) — Bearer + Backend-Session auth, the route table for articles/categories/slices/modules/templates/languages/media/users/metainfo, the slice POST schema, OpenAPI spec, the unified `{data, meta}` list format, and a 401/404/405/500 diagnostic flow. Covers the Backend-mirror under `/api/backend/...`, multipart media upload, metainfo values for articles/categories/media/clangs, and yrewrite cache invalidation. Use when the user calls the api addon over HTTP, hits a confusing 401/404/405, syncs articles between systems via this API, builds tooling around it, or says "API-Aufruf", "REST-API ansprechen", "Bearer-Token", "Slice anlegen per API", "Artikel über API erzeugen".
 ---
 
 # REDAXO `api` Addon – Calling the API (v1.2+)
@@ -187,6 +187,10 @@ Available in the backend at `?page=api/openapi`. Generated from the route defini
 
 - Adding a scope to the token that doesn't quite match the route name (e.g. `structure/article/add` vs. `structure/articles/add`) → 401 `Authorization failed`. Copy from the route source, don't re-type.
 - Calling a Bearer route via the cookie session (or vice versa) → use the `/api/backend/...` mirror for backend-session calls, the plain path for Bearer.
-- Building tooling that posts a slice and expects the article to be reachable on the frontend immediately → regenerate yrewrite path cache after creating articles/categories.
+- Building tooling that posts a slice and expects the article to be reachable on the frontend immediately → regenerate yrewrite path cache after creating articles/categories (no API endpoint exists; do it in the backend or call `rex_yrewrite::generatePathFile([])`).
+- Slice POST body using `value21`, `media11`, `link11`, … — REDAXO modules only have slots 1–20 (values) / 1–10 (media/medialist/link/linklist). Extra slots are silently ignored, not validated.
+- Slice POST without `module_id` + `clang_id`, or with a `module_id` that isn't allowed in the article's template/ctype → 4xx / 500 with "Template has no module in such ctype". Check the template config before retrying.
+- Requesting `per_page` above 1000 — the value is silently capped at 1000, not honoured as-is. Paginate explicitly with `page=N` when you actually need more.
+- Passing a `sort` field that isn't in the endpoint's whitelist → 400 with the allowed list in the body. Read that list; don't guess at `?sort=name:asc` if the endpoint only accepts e.g. `priority`/`createdate`/`updatedate`.
 - 500 with no log line: check that `rex_logger` is configured and writeable; the addon logs every controller exception.
 - `Authorization` header missing on Apache → add the `RewriteRule` above.
