@@ -43,6 +43,8 @@ RewriteCond %{HTTP:Authorization} .
 RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 ```
 
+> **Idempotency contract.** Re-running this recipe is safe **as long as you reuse the original article IDs**. Steps 2 and 3 always need a stable ID map; step 1 only needs one if you want to skip the structure-create. After step 1 finishes, persist `$LOGIN`, `$REGISTER`, … into `.ycom-quickstart-state.json` (snippet at the bottom under "Idempotency") and source it on every subsequent run. Without that file, step 1 will happily create duplicate articles named "Login (2)" etc.
+
 ## Step 1 — Create the structure via the api addon
 
 The 9 pages are not a flat list. The 6 user-facing entry points (login, password-forgot, profile, password-change, registration, logout) are **categories** at the top level; the 3 token-target pages (registration-confirm, password-reset, terms-of-use) live as **articles inside the related category**:
