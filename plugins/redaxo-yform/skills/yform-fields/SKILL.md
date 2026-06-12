@@ -1,6 +1,6 @@
 ---
 name: yform-fields
-description: YForm field types, validators, and actions – the building blocks for forms and tables. Covers all value/validate/action types with parameters, the choice / be_manager_relation / upload field configurations, custom field types, and the pipe syntax used in the Formbuilder. Use when picking field types, configuring validators, building custom field/validator classes, troubleshooting field rendering or save behavior, or writing forms in pipe syntax.
+description: YForm field types, validators, and actions – the building blocks for forms and tables. Covers all value/validate/action types with parameters, the choice / be_manager_relation / upload field configurations, custom field types, and the pipe syntax used in the Formbuilder. Use when picking field types, configuring validators, building custom field/validator classes, troubleshooting field rendering or save behavior, writing forms in pipe syntax, or when the user says "Feldtypen", "YForm-Felder", "Validierung", "Formular-Felder", "be_manager_relation", or "Formbuilder Pipe-Syntax".
 ---
 
 # YForm Fields, Validators & Actions
