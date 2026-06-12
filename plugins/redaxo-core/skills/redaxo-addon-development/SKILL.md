@@ -260,6 +260,30 @@ Addons can ship their own `composer.json` + `vendor/` directory. REDAXO autoload
 - If vendor code throws unhelpful exceptions, catch and rethrow with a better message in your own wrapper class.
 - Vendor autoloading only kicks in once the addon is **installed**. Code that runs before install (e.g. a custom installer script) won't have access to vendor classes.
 
+### Single-file libraries without a `rex_*` class name
+
+REDAXO's autoloader resolves classes in `lib/` by filename: `lib/rex_foo.php` → class `rex_foo`. A drop-in single-file library that ships as e.g. class `QRencode` (no `rex_*` prefix, no `composer.json`) won't be picked up — neither by the REDAXO autoloader nor by the Composer fallback.
+
+Pattern: wrap it in a `rex_*` class and `require_once` the file from inside the wrapper. The wrapper is autoloaded on first reference; the wrapped file is included only when actually needed.
+
+```
+lib/rex_qr_wrapper.php   // class rex_qr_wrapper — autoloaded
+lib/phpqrcode.php        // class QRencode — NOT autoloaded
+```
+
+```php
+class rex_qr_wrapper
+{
+    public static function encode(string $data): array
+    {
+        require_once __DIR__ . '/phpqrcode.php';
+        return QRencode::factory(QR_ECLEVEL_H, 1, 0)->encode($data);
+    }
+}
+```
+
+Calling code only ever touches `rex_qr_wrapper`, never the raw library. Same trick works for any non-namespaced single-file lib you'd otherwise be tempted to `require` from random places.
+
 ## Web components / embeddable widgets
 
 When building a widget that gets embedded on third-party sites:
@@ -285,6 +309,15 @@ When building a widget that gets embedded on third-party sites:
 11. **Putting non-idempotent code in `install.php`** without checks – the user may re-install.
 12. **Hardcoding asset paths** instead of `rex_url::addonAssets()` – breaks subdirectory deployments.
 13. **Skipping `perm:` declarations** – any backend user can then access the page.
+14. **Backend download links broken by PJAX** – the backend uses PJAX, which intercepts `<a href>` clicks and loads the response into the current page instead of triggering a download. `rex_api_function` returning binary data doesn't help (REDAXO expects a `rex_api_result` object, not raw output), and `target="_blank"` is unreliable across PJAX configurations. For small payloads (SVG, CSV, generated text) the cleanest fix is to inline the data as a `data:` URL on the link and set `download="filename.ext"` — no server round-trip, PJAX leaves it alone:
+
+    ```php
+    $svg = '<svg ...>...</svg>';
+    $href = 'data:image/svg+xml;base64,' . base64_encode($svg);
+    echo '<a href="' . rex_escape($href, 'html_attr') . '" download="export.svg" class="btn btn-xs">SVG</a>';
+    ```
+
+    For larger payloads, render a standalone PHP entry point outside the backend page tree (or use a `rex_api_function` that hands back a `rex_api_result` with a redirect to a streaming endpoint).
 
 ## Testing & debugging
 
