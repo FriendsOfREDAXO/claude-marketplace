@@ -36,7 +36,7 @@ For multilingual projects with Sprog, replace the placeholder:
 placeholder="<?= rex_escape(sprogdown('search_placeholder', 'Suchen...')) ?>"
 ```
 
-## Simple search result module
+## Search result module
 
 ### Input
 
@@ -44,45 +44,7 @@ No input needed (or optionally a heading via `REX_VALUE[1]`).
 
 ### Output
 
-```php
-<?php
-use FriendsOfRedaxo\SearchIt\SearchIt;
-
-$searchTerm = rex_request('search', 'string', '');
-if ($searchTerm === '') {
-    return;
-}
-
-$search = new SearchIt();
-$result = $search->search($searchTerm);
-
-if ($result['count'] > 0) {
-    echo '<p>' . $result['count'] . ' results for "' . rex_escape($searchTerm) . '"</p>';
-    echo '<ul class="search-results">';
-
-    foreach ($result['hits'] as $hit) {
-        if ($hit['type'] === 'article') {
-            $article = rex_article::get($hit['fid'], $hit['clang']);
-            if ($article) {
-                echo '<li class="search-results__item">';
-                echo '<a href="' . rex_getUrl($hit['fid'], $hit['clang']) . '">';
-                echo rex_escape($article->getName());
-                echo '</a>';
-                echo '<p>' . $hit['highlightedtext'] . '</p>';
-                echo '</li>';
-            }
-        }
-    }
-
-    echo '</ul>';
-} else {
-    echo '<p>No results for "' . rex_escape($searchTerm) . '".</p>';
-}
-```
-
-## Enhanced result module with hit type handling
-
-Index additional DB columns in the backend (Settings > Additional sources) for richer results:
+The result loop is the same regardless of which sources you've configured — what varies is which `$hit['type']` values can show up. Handle every type you've enabled; default-skip the rest. (`hit.type` ∈ `article`, `db_column`, `file`, `url` — see the search-it-search skill for the full hit structure.)
 
 ```php
 <?php
@@ -106,7 +68,7 @@ echo '<p>' . $result['count'] . ' results for "' . rex_escape($searchTerm) . '"<
 foreach ($result['hits'] as $hit) {
     $url = '';
     $title = '';
-    $teaser = $hit['highlightedtext'];
+    $teaser = $hit['highlightedtext']; // already highlight-wrapped, safe to echo
 
     switch ($hit['type']) {
         case 'article':
@@ -117,23 +79,25 @@ foreach ($result['hits'] as $hit) {
             break;
 
         case 'db_column':
+            // Only worthwhile if you've added DB-column sources in backend settings.
             if ($hit['table'] === rex::getTable('article')) {
                 $article = rex_article::get($hit['fid'], $hit['clang']);
                 if (!$article) continue 2;
                 $url = rex_getUrl($hit['fid'], $hit['clang']);
                 $title = $article->getName();
             } else {
-                continue 2; // skip non-article DB hits or handle custom tables
+                continue 2; // skip non-article DB hits or wire your own handler
             }
             break;
 
         case 'file':
+            // Only if file/PDF indexing is enabled.
             $url = rex_url::media($hit['filename']);
             $title = $hit['filename'];
             break;
 
         default:
-            continue 2;
+            continue 2; // 'url' (URL addon) etc. — add a branch when needed
     }
 
     echo '<div class="search-results__item">';
@@ -142,6 +106,8 @@ foreach ($result['hits'] as $hit) {
     echo '</div>';
 }
 ```
+
+If you only ever search articles, you can drop the `db_column` / `file` branches — the structure stays the same.
 
 ## Pagination
 
