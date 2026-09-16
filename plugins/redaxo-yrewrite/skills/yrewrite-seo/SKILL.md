@@ -9,7 +9,7 @@ YRewrite ships with `rex_yrewrite_seo` – a helper that pulls SEO data from art
 
 ## Article SEO data
 
-Each article has SEO fields managed via the "SEO Data" panel in the backend (article edit sidebar). They are columns of `rex::getTable('article')` added by YRewrite's `install.php` – not meta-info fields, so there is no `art_` prefix. Read them with `rex_article::getValue()`:
+Each article has SEO fields managed via the "SEO Data" panel in the backend (article edit sidebar). They are columns of `rex::getTable('article')` added by YRewrite's `install.php` – not meta-info fields, so there is no `art_` prefix. Read them from an article instance, e.g. `rex_article::getCurrent()->getValue('yrewrite_title')`:
 
 - `yrewrite_title` – `<title>` override (falls back to the domain's title scheme, default `%T / %SN` = article name / server name)
 - `yrewrite_description` – meta description
