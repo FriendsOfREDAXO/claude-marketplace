@@ -127,9 +127,12 @@ $data = [
 ];
 
 rex_article_service::addArticle($data);
+if (null === $articleId) {
+    throw new RuntimeException('ART_ADDED did not fire – addArticle() failed or capturing code changed');
+}
 ```
 
-The article is always created in all languages – a `clang` key in `$data` has no effect. It starts offline in every language; set the status afterwards with `rex_article_service::articleStatus($articleId, $clangId, 1)`.
+The article is always created in all languages – a `clang` key in `$data` has no effect. It starts offline in every language; set the status per language afterwards, e.g. `foreach (rex_clang::getAllIds() as $clangId) { rex_article_service::articleStatus($articleId, $clangId, 1); }`.
 
 Editing:
 
