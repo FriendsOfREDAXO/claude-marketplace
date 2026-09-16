@@ -126,6 +126,9 @@ rex_category_service::addCategory(
     ]
 );
 // The category is created in all languages – there is no clang parameter.
+if (null === $id) {
+    throw new RuntimeException('CAT_ADDED did not fire – addCategory() failed or capturing code changed');
+}
 
 rex_category_service::editCategory($id, rex_clang::getCurrentId(), [
     'catname' => 'Renamed section',
