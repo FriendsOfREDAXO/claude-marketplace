@@ -104,8 +104,8 @@ When 20 `REX_VALUE` slots aren't enough or you need structured data:
        value='REX_VALUE[1]' id="rex-data">
 // + JS/UI that writes JSON into #rex-data on form submit
 
-// Output: decode safely
-$data = json_decode('REX_VALUE[1]', true) ?: [];
+// Output: decode safely (REX_VALUE is HTML-escaped, see pitfalls)
+$data = rex_var::toArray('REX_VALUE[1]') ?? [];
 ```
 
 ## Common pitfalls
@@ -114,3 +114,4 @@ $data = json_decode('REX_VALUE[1]', true) ?: [];
 - Forgetting `rex_escape()` – any field touched by an editor must be escaped on output.
 - Hardcoding image dimensions – use `rex_media`'s `getWidth()` / `getHeight()` or the `media_manager` addon for responsive variants.
 - Querying inside output PHP for many slices on one page → N+1 problem. Cache lookups or batch them.
+- Decoding JSON with `json_decode('REX_VALUE[1]', true)` – `REX_VALUE[n]` is substituted HTML-escaped (`"` → `&quot;`, in output additionally `nl2br()`), so `json_decode()` returns `null` without any error and the fallback kicks in silently. Use `rex_var::toArray('REX_VALUE[1]')`, which decodes the entities first (compact JSON only – line breaks become `<br />`), or `REX_VALUE[id=1 output=html]` for the unescaped value.
