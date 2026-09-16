@@ -5,6 +5,8 @@ description: Building REDAXO module inputs with MForm – MForm::factory(), all 
 
 # MForm Basics
 
+> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+
 MForm renders the backend input form of REDAXO modules. The PHP code is placed in the **INPUT** section of a module.
 
 ## Minimal example
@@ -56,7 +58,7 @@ $mform->addMultiSelectField(2, ['a' => 'A', 'b' => 'B', 'c' => 'C'], ['label' =>
 $mform->addRadioField(3, ['yes' => 'Ja', 'no' => 'Nein'], ['label' => 'Option'], 'yes');
 $mform->addCheckboxField(4, [1 => 'Aktiviert'], ['label' => 'Status']);
 $mform->addToggleCheckboxField(5, [1 => 'Sichtbar'], ['label' => 'Sichtbarkeit']);
-$mform->addCheckboxGroupField(6, ['news' => 'News', 'blog' => 'Blog', 'event' => 'Event'], ['label' => 'Kategorien']);
+$mform->addCheckboxGroupField(6, ['news' => 'News', 'blog' => 'Blog', 'event' => 'Event'], ['label' => 'Kategorien']); // (v9+)
 
 // Optgroups: use nested array (key = group label)
 $mform->addSelectField(8, [
@@ -165,7 +167,7 @@ $mform->addInlineElement('Name', MForm::factory()
 );
 ```
 
-### Modal sub-form
+### Modal sub-form (v9+)
 
 ```php
 $mform->addModalElement(
@@ -178,7 +180,7 @@ $mform->addModalElement(
 );
 ```
 
-### Conditional fieldset (show/hide based on another field)
+### Conditional fieldset (show/hide based on another field) (v9+)
 
 ```php
 $mform->addSelectField(1, ['img' => 'Bild', 'video' => 'Video'], ['label' => 'Medientyp']);
@@ -231,7 +233,7 @@ echo $mform->show();          // renders and outputs the form
 $html = $mform->show();       // or capture as string
 ```
 
-## Templates (project-level form reuse)
+## Templates (project-level form reuse) (v9+)
 
 Templates encapsulate recurring field groups in a class and register them by key. They are defined once in `project/boot.php` and applied in any module.
 
@@ -331,7 +333,7 @@ echo MForm::factory()
 
 - **Never reuse the same integer ID for different top-level fields** – each value slot (1–20) can only hold one value.
 - **Inside a repeater, inner fields use plain string keys** (`'title'`, `'link'`, …), not dotted IDs. See the **mform-flex-repeater** skill for the full Repeater API.
-- **`addRepeaterElement()` is just an alias** for `addFlexRepeaterElement()` – both exist for backwards compatibility.
+- **`addRepeaterElement()` is just an alias** for `addFlexRepeaterElement()` – both exist for backwards compatibility (MForm 9; in 8.x `addRepeaterElement()` is the Alpine.js repeater).
 - **`setSqlOptions()` must follow immediately** after the `addSelectField()` call it refers to.
 - **`setDefaultValue()` only applies** if the value slot is empty (first render). Existing saved values take precedence.
 - **`addToggleCheckboxField()`** stores `1` when checked, empty string when not. Check with `'1' === REX_VALUE[n]` in OUTPUT PHP.
