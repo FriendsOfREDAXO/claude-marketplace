@@ -18,6 +18,10 @@ Programmatic creation (e.g. during a migration):
 
 ```php
 $domain = rex_yrewrite::getDomainByName('www.example.com'); // host name without scheme
+if (!$domain) {
+    // getDomainByName() returns null if the domain isn't configured in YRewrite
+    return;
+}
 
 $sql = rex_sql::factory();
 $sql->setTable(rex::getTable('yrewrite_forward'));
