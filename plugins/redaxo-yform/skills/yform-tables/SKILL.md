@@ -87,7 +87,7 @@ rex_yform_manager_table_api::setTableField(rex::getTable('team_member'), [
     'label'     => 'Role',
     'table'     => rex::getTable('team_role'),
     'field'     => 'name',
-    'type'      => '0', // 0=single select, 1=multi select, 2=popup, 3=popup multi, 4=inline 1:n, 5=inline m:n
+    'type'      => '0', // 0=single select, 1=multi select, 2=popup, 3=popup multi, 4=1:n popup, 5=1:n inline
     'prio'      => 3,
 ]);
 
@@ -197,4 +197,4 @@ For production projects, prefer programmatic definition in `install.php` over im
 - Hardcoding `rex_team_member` instead of `rex::getTable('team_member')` – breaks multi-instance / non-default-prefix setups.
 - Not including `createdate` / `updatedate` columns – YForm's standard `datestamp` fields silently break without them.
 - Defining validators before the corresponding `value` field – sort by `prio` so values come first, then validators.
-- Using `rex_yform_manager_table_api::setTable()` without first creating the SQL table via `rex_sql_table::ensure()` – YForm metadata then references a nonexistent table.
+- Expecting `rex_yform_manager_table_api::setTableField()` to create the column – `setTable()` itself creates a missing SQL table (`CREATE TABLE IF NOT EXISTS` with `id`) and the columns of fields that already exist, but a field added afterwards via `setTableField()` gets its column only after `rex_yform_manager_table_api::generateTableAndFields()` (or your own `rex_sql_table::ensure()`).
