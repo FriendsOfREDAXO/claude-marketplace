@@ -357,6 +357,8 @@ If `yform_tools` is installed, attribute JSON gives you these for free:
 
 ## Common pitfalls
 
+- Writing target rows with `rex_sql` after a `be_manager_relation` has already resolved that table in the same request, then saving a relation to them – the field checks IDs against a per-request cache of the target table. A dataset `save()` of a new row clears it, a `rex_sql` insert does not, so the ID is dropped: `save()` returns `false` with the field's `empty_value` message, or with `empty_option` enabled the row is stored without the relation. Call `rex_yform_value_be_manager_relation::clearCache($targetTable)` after such inserts.
+- Creating the foreign-key column of a `be_manager_relation` (types 0–3) yourself as nullable – the backend list runs `explode(',', $value)` on it, and every `NULL` row triggers "explode(): Passing null to parameter #2 ($string) of type string is deprecated". YForm itself creates the column `NOT NULL`; do the same and use `0` for "no relation": `new rex_sql_column('parent_id', 'int(10) unsigned', false, '0')`.
 - Misspelling `type_name_internal` for the `type` validator – falls back to silent pass.
 - Setting `no_db: 1` on a field whose SQL column also exists – data gets ignored on save, then read back as empty.
 - Missing `prio` on validators – they may fire before the value field is populated.
