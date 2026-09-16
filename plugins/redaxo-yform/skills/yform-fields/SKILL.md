@@ -160,7 +160,7 @@ For ORM-style relation access, see the `yform-datasets` skill (`getRelatedDatase
 
 ## Field type: `upload`
 
-Configure via JSON in the `config` slot (key `config` in `setTableField()` / tablesets). Keys set here override `sizes`, `types` and `messages`; `required` stays its own parameter:
+Configure via JSON in the `config` slot (key `config` in `setTableField()` / tablesets). Keys set here override `sizes`, `types` and `messages`; `required` stays its own parameter. Note: `sizes.min`/`sizes.max` here are **bytes**, unlike the pipe-syntax `sizes` parameter above, which is **KB**:
 
 ```json
 {
