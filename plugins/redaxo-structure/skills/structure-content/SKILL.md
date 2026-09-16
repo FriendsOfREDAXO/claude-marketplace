@@ -60,6 +60,9 @@ rex_extension::register('SLICE_ADDED', static function (rex_extension_point $ep)
 });
 
 rex_content_service::addSlice($articleId, $clangId, $ctype, $moduleId, $data);
+if (null === $sliceId) {
+    throw new RuntimeException('SLICE_ADDED did not fire – addSlice() failed or capturing code changed');
+}
 ```
 
 The `$data` keys are `value1`–`value20`, `media1`–`media10`, `medialist1`–`medialist10`, `link1`–`link10`, `linklist1`–`linklist10`.
@@ -92,8 +95,10 @@ For exact priority on a new slice, pass `priority` in `$data` to `addSlice()` �
 
 ```php
 $slice = rex_article_slice::getArticleSliceById($sliceId, $clangId);
-for ($i = $slice->getPriority(); $i > 3; --$i) {
-    rex_content_service::moveSlice($sliceId, $clangId, 'moveup');
+$target = 3;
+$direction = $slice->getPriority() > $target ? 'moveup' : 'movedown';
+for ($i = abs($slice->getPriority() - $target); $i > 0; --$i) {
+    rex_content_service::moveSlice($sliceId, $clangId, $direction);
 }
 ```
 
