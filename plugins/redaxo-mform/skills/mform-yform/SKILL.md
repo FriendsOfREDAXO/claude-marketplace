@@ -5,7 +5,7 @@ description: Using MForm-provided YForm value types in YForm table definitions a
 
 # MForm YForm Value Types
 
-> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+> **Written for MForm ≥ 9.0.0** (the version this plugin requires). Items marked **(v9+)** do not exist in MForm 8.x. Runtime check: `rex_version::compare(rex_addon::get('mform')->getVersion(), '9.0.0', '>=')`.
 
 MForm registers custom value types that extend the YForm field palette. They appear in the YForm Manager field type dropdown once MForm is installed.
 
