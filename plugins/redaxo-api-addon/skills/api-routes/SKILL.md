@@ -68,7 +68,28 @@ GET/POST list+add, GET/PUT/DELETE on `{id}` for all three. Scopes: `templates/{l
 | PUT    | `/api/media/category/{id}`            | `media/category/update`|
 | DELETE | `/api/media/category/{id}`            | `media/category/delete`|
 
-Multipart upload: send the file under field name `file_new` (multipart/form-data); other metadata fields (`title`, `category_id`) sit alongside as form fields.
+Multipart upload: send the file under field name `file` (multipart/form-data); other metadata fields (`title`, `category_id`) sit alongside as form fields. `PUT /api/media/{filename}/update` reads a replacement file from the same field name `file`.
+
+### Chunked media upload (v1.3+)
+
+`POST /api/media` is bound to PHP's `upload_max_filesize` / `post_max_size` (exceeding them returns `413`). Larger files go through five routes that assemble the chunks server-side and then hand the file to `rex_media_service::addMedia()` — same checks and EPs as a normal upload.
+
+| Method   | Path                                            | Route name               |
+|----------|-------------------------------------------------|--------------------------|
+| POST     | `/api/media/upload`                             | `media/upload/init`      |
+| GET      | `/api/media/upload/{upload_id}`                 | `media/upload/status`    |
+| POST/PUT | `/api/media/upload/{upload_id}/chunk/{index}`   | `media/upload/chunk`     |
+| POST     | `/api/media/upload/{upload_id}/finalize`        | `media/upload/finalize`  |
+| DELETE   | `/api/media/upload/{upload_id}`                 | `media/upload/delete`    |
+
+- **One scope for all five routes: `media/upload`.** Unlike the routes above, where the scope equals the route name, it is shared — grant `media/upload` on the token, not the five route names.
+- `init` takes a JSON body `{"filename": "...", "size": <bytes>, "category_id": 0, "title": ""}` (unknown fields → 400) and answers `201` with `upload_id`, `chunk_size_max`, `max_chunks` and `expires_at`. The file extension is checked here already.
+- `chunk`: send the bytes as the raw request body (`application/octet-stream`) or as multipart field `chunk`. `index` is zero-based; re-sending an index replaces that chunk. More bytes than announced at `init` → 400.
+- `status` lists the received `chunks`, `bytes_missing`, `contiguous` and `complete` — use it to resume after a broken connection.
+- `finalize` requires the indices to be contiguous from `0` and the total to match `size`; it answers `201 {"message": "Media created", "filename": "..."}`.
+- Limits: 2 GiB per file, 20 000 chunks; an unfinished upload expires after 24 h.
+- An upload is bound to the token (or backend user) that started it — any other caller gets `404 Upload not found`.
+- The routes are mirrored under `/api/backend/media/upload/...` with backend-session auth, like all media routes.
 
 ### Users / roles
 
