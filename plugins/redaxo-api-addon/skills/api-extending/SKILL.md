@@ -80,7 +80,7 @@ class MyResource extends RoutePackage
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => 'Body field: `' . $e->getMessage() . '` is required'], 400);
         }
-        // ... persist, $id = new record id ...
+        $id = 0; // ... persist, e.g. $id = (int) $sql->getLastId() ...
         return new JsonResponse(['message' => 'Thing created', 'id' => $id], 201);
     }
 }
@@ -144,7 +144,7 @@ This rule applies equally to your custom RoutePackages if you're wrapping core r
 
 ## Returning the right response shape
 
-Use `Symfony\Component\HttpFoundation\JsonResponse` (the built-in routes converged on this in #18). It sets `Content-Type: application/json` automatically and serialises arrays for you:
+Use `Symfony\Component\HttpFoundation\JsonResponse` (the built-in routes converged on this in #18). It sets `Content-Type: application/json` automatically and serialises arrays for you — `$items`, `$meta` and `$id` below stand for whatever your handler computed:
 
 ```php
 return new JsonResponse(['data' => $items, 'meta' => $meta], 200);
