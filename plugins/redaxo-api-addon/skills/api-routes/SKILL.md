@@ -74,13 +74,13 @@ Multipart upload: send the file under field name `file` (multipart/form-data); o
 
 `POST /api/media` is bound to PHP's `upload_max_filesize` / `post_max_size` (exceeding them returns `413`). Larger files go through five routes that assemble the chunks server-side and then hand the file to `rex_media_service::addMedia()` — same checks and EPs as a normal upload.
 
-| Method   | Path                                            | Route name               |
-|----------|-------------------------------------------------|--------------------------|
-| POST     | `/api/media/upload`                             | `media/upload/init`      |
-| GET      | `/api/media/upload/{upload_id}`                 | `media/upload/status`    |
-| POST/PUT | `/api/media/upload/{upload_id}/chunk/{index}`   | `media/upload/chunk`     |
-| POST     | `/api/media/upload/{upload_id}/finalize`        | `media/upload/finalize`  |
-| DELETE   | `/api/media/upload/{upload_id}`                 | `media/upload/delete`    |
+| Method   | Path                                            | Route name               | Scope          |
+|----------|-------------------------------------------------|--------------------------|----------------|
+| POST     | `/api/media/upload`                             | `media/upload/init`      | `media/upload` |
+| GET      | `/api/media/upload/{upload_id}`                 | `media/upload/status`    | `media/upload` |
+| POST/PUT | `/api/media/upload/{upload_id}/chunk/{index}`   | `media/upload/chunk`     | `media/upload` |
+| POST     | `/api/media/upload/{upload_id}/finalize`        | `media/upload/finalize`  | `media/upload` |
+| DELETE   | `/api/media/upload/{upload_id}`                 | `media/upload/delete`    | `media/upload` |
 
 - **One scope for all five routes: `media/upload`.** Unlike the routes above, where the scope equals the route name, it is shared — grant `media/upload` on the token, not the five route names.
 - `init` takes a JSON body `{"filename": "...", "size": <bytes>, "category_id": 0, "title": ""}` (unknown fields → 400) and answers `201` with `upload_id`, `chunk_size_max`, `max_chunks` and `expires_at`. The file extension is checked here already.
