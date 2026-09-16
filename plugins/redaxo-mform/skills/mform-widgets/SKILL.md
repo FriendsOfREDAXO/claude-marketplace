@@ -5,6 +5,8 @@ description: Advanced MForm widget fields – Custom-Link (addCustomLinkField, a
 
 # MForm Widgets
 
+> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+
 MForm provides advanced picker widgets beyond standard HTML inputs. All work inside modules and inside the Flex Repeater.
 
 > All examples assume `use FriendsOfRedaxo\MForm;` at the top of the file and `$mform = MForm::factory();` already called.
@@ -70,7 +72,7 @@ if ($url) {
 
 ---
 
-## Custom-Link Multiple (`addCustomLinkMultipleField`)
+## Custom-Link Multiple (`addCustomLinkMultipleField`) (v9+)
 
 Multiple links as a JSON array in one value slot.
 
@@ -106,7 +108,7 @@ foreach ($links as $linkStr) {
 
 ---
 
-## MForm Link Field (`addMFormLinkField`)
+## MForm Link Field (`addMFormLinkField`) (v9+)
 
 Internal-article-only wrapper around Custom-Link. `data-*` link-type flags go in `$parameter` (2nd); `label` goes in `$attributes` (4th).
 
@@ -126,7 +128,7 @@ $mform->addMediaField(1, ['label' => 'Bild', 'preview' => 1]);
 // With type restriction and category
 $mform->addMediaField(2, ['label' => 'Grafik', 'preview' => 1, 'types' => 'jpg,png,gif,svg,webp', 'category' => 3]);
 
-// MForm variant (mform-media, stores filename in REX_VALUE; label in $attributes, data-* in $parameter)
+// MForm variant (v9+; mform-media, stores filename in REX_VALUE; label in $attributes, data-* in $parameter)
 $mform->addMFormMediaField(1, ['types' => 'jpg,png,webp', 'preview' => '1'], null, ['label' => 'Datei']);
 ```
 
@@ -151,7 +153,7 @@ $mform->addMedialistField(1, ['label' => 'Dateien', 'types' => 'pdf,doc,docx']);
 $mform->addMedialistField(2, [
     'label'       => 'Galerie',
     'types'       => 'jpg,png,webp',
-    'view'        => 'gallery',   // start view: list | grid | gallery
+    'view'        => 'gallery',   // start view: list | grid | gallery (view options: v9+)
     'views'       => 'gallery,grid,list',
     'view_switch' => 1,           // show view-toggle button (default: 1)
 ]);
@@ -249,7 +251,7 @@ MForm::isUsingCustomLinkForClassicWidgets(); // bool
 
 ---
 
-## ColorSwatch (`addColorSwatchField`)
+## ColorSwatch (`addColorSwatchField`) (v9+)
 
 Text input + visual color/class picker. Stores either a hex color (`#2f77bc`) or a CSS class name (`.bg-primary`).
 
@@ -278,7 +280,7 @@ if (str_starts_with($color, '.')) {
 
 ## Using widgets outside modules
 
-### In own addon backend pages (direct `::getWidget()`)
+### In own addon backend pages (direct `::getWidget()`) (v9+)
 
 ```php
 // Medialist widget – standalone, no MForm::factory() needed
@@ -300,7 +302,7 @@ echo rex_var_custom_link_multi::getWidget(
 
 ### In `rex_form`
 
-Dedicated `rex_form_widget_*_element` classes are available:
+Dedicated `rex_form_widget_*_element` classes are available (MForm 8.x only has `rex_form_widget_customlink_element` and `rex_form_widget_imglist_element`):
 
 ```php
 // Medialist
