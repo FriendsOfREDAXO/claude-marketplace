@@ -149,7 +149,9 @@ $sorted = MFormRepeaterHelper::sortByField($items, 'date', 'desc');
 $grouped = MFormRepeaterHelper::groupByField($items, 'category');
 
 // Pagination
-$paged = MFormRepeaterHelper::limitItems($items, limit: 10, offset: $page * 10); // $page is 0-based
+$limit = 10;
+$page = 0; // current page, 0-based
+$paged = MFormRepeaterHelper::limitItems($items, limit: $limit, offset: $page * $limit);
 ```
 
 ### Custom link values inside repeater rows
