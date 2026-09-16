@@ -134,3 +134,4 @@ rex_sql_table::get(rex::getTable('my_addon_items'))
 - Using `mysqli_*` or raw `PDO` directly – breaks with non-default DB configs.
 - Calling `getValue()` on a row object that hasn't been fetched (after exhausted iteration). Re-run the query or seek with `$sql->next()`.
 - Forgetting that `getArray()` consumes the result set – call it once, then operate on the array.
+- Re-creating a table in the same request after a raw `DROP TABLE` – `rex_sql_table::get()` caches the table definition per name, so `exists()` still returns `true` and `ensure()` tries to `ALTER` a table that is gone. Drop via `rex_sql_table::get($name)->drop()`, which marks the cached instance as non-existing so `ensure()` creates the table again, or call `rex_sql_table::clearInstance($name)` after an external `DROP TABLE`.
