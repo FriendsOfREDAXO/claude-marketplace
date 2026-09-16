@@ -55,7 +55,7 @@ For media and link widgets, use the special widget syntax shown above – not pl
 
 ## Output pattern
 
-Always escape user-controlled data when rendering. Plain `REX_VALUE[n]` is already escaped, so read the raw value with `output=html` before passing it to `rex_escape()`:
+Escape user-controlled data when rendering, unless you deliberately output trusted WYSIWYG editor HTML raw (see the `output=html` exception below). Plain `REX_VALUE[n]` is already escaped, so read the raw value with `output=html` before passing it to `rex_escape()`:
 
 ```php
 <?php
@@ -92,7 +92,7 @@ $linkId   = (int) 'REX_LINK[1]';
 - `'css'` – inside `<style>`
 - `'url'` – for URL components
 
-`'html_simplified'` does not strip other tags, it escapes them – WYSIWYG HTML (`<p>`, `<a>`, lists) would show up as text. Output editor HTML with `REX_VALUE[id=n output=html]`, which only neutralises `<?` / `?>` and offers no XSS protection.
+`'html_simplified'` does not strip other tags, it escapes them – WYSIWYG HTML (`<p>`, `<a>`, lists) would show up as text. For trusted WYSIWYG editor HTML, skip `rex_escape()` and output `REX_VALUE[id=n output=html]` directly – this is the one deliberate exception to the escaping rule above; it only neutralises `<?` / `?>` and offers no XSS protection, so use it only for content editors are trusted to write.
 
 ## Storing structured data
 
