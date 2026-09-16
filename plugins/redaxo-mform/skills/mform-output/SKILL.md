@@ -5,11 +5,13 @@ description: Reading MForm field values in REDAXO module OUTPUT PHP – MFormOut
 
 # MForm Output Helpers
 
+> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+
 The `MFormOutputHelper` class (namespace `FriendsOfRedaxo\MForm\Utils`) normalises all link and repeater values for use in frontend templates.
 
 ---
 
-## createLinkData() / normalizeLinkData()
+## createLinkData() / normalizeLinkData() (v9+)
 
 Unified entry point that accepts **any** link format and returns a consistent array.
 
@@ -93,7 +95,7 @@ $url = MFormOutputHelper::getCustomLinkUrl($linkData);
 
 ## Repeater rows
 
-Use `MFormRepeaterHelper::decode()` – it handles JSON decoding, HTML entity decoding, and filters disabled rows (online/offline toggle) in one call.
+Use `MFormRepeaterHelper::decode()` (v9+) – it handles JSON decoding, HTML entity decoding, and filters disabled rows (online/offline toggle) in one call.
 
 > See the **mform-flex-repeater** skill for the full Repeater API including `filterByField()`, `sortByField()`, `groupByField()`, and `limitItems()`.
 
@@ -102,12 +104,12 @@ use FriendsOfRedaxo\MForm\Repeater\MFormRepeaterHelper;
 
 $rows = MFormRepeaterHelper::decode('REX_VALUE[1]');
 
-// Alternative (v8-kompatibel / already-decoded array):
+// Alternative (v8-kompatibel / already-decoded array; prepareItemsForOutput() itself is v9+):
 // $raw  = json_decode(html_entity_decode('REX_VALUE[1]', ENT_QUOTES | ENT_HTML5, 'UTF-8'), true) ?? [];
 // $rows = MFormRepeaterHelper::prepareItemsForOutput($raw);
 ```
 
-### Normalising link fields in repeater rows
+### Normalising link fields in repeater rows (v9+)
 
 ```php
 use FriendsOfRedaxo\MForm\Utils\MFormOutputHelper;
@@ -193,4 +195,4 @@ if (MFormOutputHelper::isFirstSlice(REX_SLICE_ID)) {
 - **`customlink_class` is a plain string** (`'internal'`, `'external'`, etc.), not an HTML class attribute string.
 - **`normalizeRepeaterItems()` does not mutate** the original array – assign the return value.
 - **`mode = 'raw'`** keeps backend helper labels (article name with `[ID]` suffix) in the `name` key. Use for debugging only.
-- **Always decode repeater values with `MFormRepeaterHelper::decode('REX_VALUE[n]')`** – it handles JSON decoding, HTML entity decoding, empty-string values on fresh modules, and filtering of disabled rows in one call. Only fall back to `json_decode(html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8'), true) ?? []` when you have a v8-era already-decoded array (then post-process with `MFormRepeaterHelper::prepareItemsForOutput()`).
+- **Always decode repeater values with `MFormRepeaterHelper::decode('REX_VALUE[n]')`** – it handles JSON decoding, HTML entity decoding, empty-string values on fresh modules, and filtering of disabled rows in one call. Only fall back to `json_decode(html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8'), true) ?? []` when you have a v8-era already-decoded array (then post-process with `MFormRepeaterHelper::prepareItemsForOutput()`; both helpers are v9+).
