@@ -111,18 +111,24 @@ if ($current) {
 Use `rex_category_service`, not direct SQL:
 
 ```php
-$id = rex_category_service::addCategory(
+// addCategory() returns a status message, not the ID – capture the ID from CAT_ADDED
+$id = null;
+rex_extension::register('CAT_ADDED', static function (rex_extension_point $ep) use (&$id): void {
+    $id = (int) $ep->getParam('id');
+});
+
+rex_category_service::addCategory(
     $parentId,                       // 0 for root
-    rex_clang::getCurrentId(),
     [
-        'name'     => 'New section',
-        'priority' => 1,
-        'status'   => 1,
+        'catname'     => 'New section', // required
+        'catpriority' => 1,             // required
+        'status'      => 1,             // optional, defaults to 0 (offline)
     ]
 );
+// The category is created in all languages – there is no clang parameter.
 
 rex_category_service::editCategory($id, rex_clang::getCurrentId(), [
-    'name' => 'Renamed section',
+    'catname' => 'Renamed section',
 ]);
 
 rex_category_service::deleteCategory($id);
@@ -131,7 +137,10 @@ rex_category_service::deleteCategory($id);
 Setting/changing the start article of a category:
 
 ```php
-rex_category_service::categoryIsStartArticle($categoryId, $articleId);
+// $articleId must be a normal article inside a (non-root) category.
+// The article swaps places with the old start article and takes over the category,
+// so afterwards the category has the ID $articleId. Returns false if not possible.
+rex_article_service::article2startarticle($articleId);
 ```
 
 ## Permissions
@@ -153,4 +162,5 @@ For frontend navigation, `isOnline()` is enough – the structure addon already 
 - Generating a navigation tree with thousands of categories without caching – every page render walks the full tree.
 - Forgetting `isOnline()` on each level – offline parents whose children are online become reachable via direct URL but not from the menu.
 - Hardcoding category IDs in templates instead of using `rex_yrewrite::getCurrentDomain()->getMountId()` for "below this domain's root". On multi-domain sites see the yrewrite-domains skill for the full domain-rooted navigation pattern.
+- Registering the `CAT_ADDED` listener inside a loop – `rex_extension` has no unregister, every registration stays active for the rest of the request. Register once, read the captured ID right after each `addCategory()` call.
 - Calling `getChildren()` without the `$ignore_offlines = true` flag in a public template, then leaking offline categories into navigation.
