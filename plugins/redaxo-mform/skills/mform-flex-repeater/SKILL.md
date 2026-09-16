@@ -149,7 +149,7 @@ $sorted = MFormRepeaterHelper::sortByField($items, 'date', 'desc');
 $grouped = MFormRepeaterHelper::groupByField($items, 'category');
 
 // Pagination
-$paged = MFormRepeaterHelper::limitItems($items, perPage: 10, offset: $page * 10);
+$paged = MFormRepeaterHelper::limitItems($items, limit: 10, offset: $page * 10); // $page is 0-based
 ```
 
 ### Custom link values inside repeater rows
@@ -192,7 +192,7 @@ foreach ($mediaNames as $filename) {
 }
 ```
 
-Or use `rex_var_custom_medialist::getMediaOutput()` for the full widget-compatible output.
+Or use `FriendsOfRedaxo\MForm\Output\MFormOutput::mediaList($item['images'] ?? '')` – it splits the value and returns only the `rex_media` objects that exist.
 
 ## Options reference
 
