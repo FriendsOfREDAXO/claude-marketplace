@@ -5,7 +5,7 @@ description: Advanced MForm widget fields – Custom-Link (addCustomLinkField, a
 
 # MForm Widgets
 
-> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+> **Written for MForm ≥ 9.0.0** (the version this plugin requires). Items marked **(v9+)** do not exist in MForm 8.x. Runtime check: `rex_version::compare(rex_addon::get('mform')->getVersion(), '9.0.0', '>=')`.
 
 MForm provides advanced picker widgets beyond standard HTML inputs. All work inside modules and inside the Flex Repeater.
 
@@ -153,9 +153,9 @@ $mform->addMedialistField(1, ['label' => 'Dateien', 'types' => 'pdf,doc,docx']);
 $mform->addMedialistField(2, [
     'label'       => 'Galerie',
     'types'       => 'jpg,png,webp',
-    'view'        => 'gallery',   // start view: list | grid | gallery (view options: v9+)
-    'views'       => 'gallery,grid,list',
-    'view_switch' => 1,           // show view-toggle button (default: 1)
+    'view'        => 'gallery',   // start view: list | grid | gallery (v9+)
+    'views'       => 'gallery,grid,list', // (v9+)
+    'view_switch' => 1,           // show view-toggle button (default: 1) (v9+)
 ]);
 ```
 
