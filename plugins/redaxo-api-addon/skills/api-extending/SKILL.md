@@ -80,8 +80,8 @@ class MyResource extends RoutePackage
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => 'Body field: `' . $e->getMessage() . '` is required'], 400);
         }
-        // ... persist ...
-        return new JsonResponse(['data' => [/* created */]], 201);
+        // ... persist, $id = new record id ...
+        return new JsonResponse(['message' => 'Thing created', 'id' => $id], 201);
     }
 }
 ```
@@ -148,16 +148,17 @@ Use `Symfony\Component\HttpFoundation\JsonResponse` (the built-in routes converg
 
 ```php
 return new JsonResponse(['data' => $items, 'meta' => $meta], 200);
-return new JsonResponse(['data' => $created], 201);
-return new JsonResponse(null, 204);                       // empty body
+return new JsonResponse(['message' => 'Thing created', 'id' => $id], 201);
+return new JsonResponse(['message' => 'Thing deleted', 'id' => $id], 200);
 return new JsonResponse(['error' => 'Bad request'], 400);
 ```
 
 For consistency with the built-in routes:
 
 - **200** for successful reads
-- **201** with the created resource for successful creates
-- **204** (empty) for successful deletes
+- **201** with `{"message": "… created", "id": …}` for successful creates (slices return `slice_id`, media `filename` instead of `id`)
+- **200** with `{"message": "… deleted", "id": …}` for successful deletes — no built-in route answers 204
+- Single-resource reads such as `GET /api/structure/articles/{id}` or `GET /api/templates/{id}` return the object itself, without a `data` wrapper; `{data, meta}` is the list envelope
 - **4xx** with `{"error": "..."}` for client errors (extra context fields are fine)
 - **5xx** with `{"error": "..."}` only after logging the underlying exception (`RouteCollection` already wraps unhandled throwables with `rex_logger::logException`)
 
@@ -173,6 +174,7 @@ The `query` and `Body` schemas you declare in `_controller` are mirrored into th
 
 - Forgetting to register the RoutePackage in `boot.php` — the route never appears, calls return 404 `Route not found`.
 - Forgetting to add the new scope to the token in the backend — calls return 401 `Authorization failed`.
+- **Omitting the auth argument makes the route public (fail-open).** The fifth parameter of `RouteCollection::registerRoute()` defaults to `null`, and `RouteCollection::handle()` only checks authorization when an auth object is set (`// if no AuthObject is set, we assume that the route is public`). Drop the trailing `new BearerAuth()` from the skeleton and the handler runs for any anonymous request. Nothing warns you: the token editor only lists scopes of `BearerAuth` routes, so the scope simply doesn't appear, and the OpenAPI spec shows the route with an empty `security`. Always pass an auth object; use `null` only for data that is meant to be public.
 - Using `new Response(json_encode(...))` and forgetting `Content-Type: application/json` — use `JsonResponse` instead, that's the addon convention since #18.
 - Reading bodies via `$_POST` — JSON bodies aren't in `$_POST`. Use `json_decode(rex::getRequest()->getContent(), true)`.
 - Using closures in `_controller` instead of `Class::method` references — Symfony's `UrlMatcher` doesn't serialize closures cleanly across the routing layer.
