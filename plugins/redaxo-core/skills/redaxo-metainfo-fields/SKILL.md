@@ -5,7 +5,7 @@ description: Defining and managing REDAXO metainfo fields (cat_*, art_*, med_*) 
 
 # REDAXO Metainfo Fields
 
-Metainfo fields add custom columns to core tables: `art_*` and `cat_*` fields to `rex_article` (categories are stored there too), `med_*` to `rex_media`, `clang_*` to `rex_clang`. They show up in the article/category/media edit forms in the backend and are read with `rex_article::getValue('art_<name>')`, `rex_category::getValue('cat_<name>')`, `rex_media::getValue('med_<name>')`.
+Metainfo fields add custom columns to core tables: `art_*` and `cat_*` fields to `rex_article` (categories are stored there too), `med_*` to `rex_media`, `clang_*` to `rex_clang`. They show up in the article/category/media edit forms in the backend and are read with `rex_article::getValue('art_<name>')`, `rex_category::getValue('cat_<name>')`, `rex_media::getValue('med_<name>')`, `rex_clang::getValue('clang_<name>')`.
 
 ## The `params` separator gotcha (SELECT / RADIO / CHECKBOX)
 
@@ -73,7 +73,7 @@ $existing  = rex_sql::factory()->getArray(
 );
 
 if (empty($existing)) {
-    rex_metainfo_add_field(
+    $result = rex_metainfo_add_field(
         'In top navi',         // $title (backend label)
         'cat_in_navi_top',     // $name (must start with cat_/art_/med_/clang_)
         100,                   // $priority
@@ -82,6 +82,9 @@ if (empty($existing)) {
         '',                                  // $default
         ':–|1:Ja',             // $params (option list)
     );
+    if (true !== $result) {
+        throw new rex_exception('metainfo field setup failed: ' . $result);
+    }
 } elseif ($existing[0]['params'] !== ':–|1:Ja') {
     // UPDATE the row directly to fix params on an existing field
     rex_sql::factory()
