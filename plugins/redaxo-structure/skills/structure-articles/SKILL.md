@@ -113,16 +113,23 @@ This is how language switchers know whether the current page even has a translat
 Use `rex_article_service`, not direct SQL inserts. It handles `path`, `priority`, slug generation, and triggers `ART_ADDED` / `ART_UPDATED` extension points so other addons (yrewrite, search) get notified.
 
 ```php
+// addArticle() returns a status message, not the ID – capture the ID from ART_ADDED
+$articleId = null;
+rex_extension::register('ART_ADDED', static function (rex_extension_point $ep) use (&$articleId): void {
+    $articleId = (int) $ep->getParam('id');
+});
+
 $data = [
-    'name'         => 'New article',
-    'category_id'  => 5,
-    'priority'     => 1,
+    'name'         => 'New article', // required
+    'category_id'  => 5,             // required, 0 for root
+    'priority'     => 1,             // required
     'template_id'  => 1,
-    'clang'        => rex_clang::getCurrentId(),
 ];
 
-$articleId = rex_article_service::addArticle($data);
+rex_article_service::addArticle($data);
 ```
+
+The article is always created in all languages – a `clang` key in `$data` has no effect. It starts offline in every language; set the status afterwards with `rex_article_service::articleStatus($articleId, $clangId, 1)`.
 
 Editing:
 
@@ -143,5 +150,6 @@ rex_article_service::deleteArticle($articleId);
 
 - Caching a `rex_article` instance and using it after a different language's request – mix-up between clangs. Always re-fetch with the right clang.
 - Iterating thousands of articles via `rex_article::get()` in a loop – each call does a lookup. For bulk reads, use SQL and `rex_article::get()` only for items you actually display.
+- Using the return value of `addArticle()` as the article ID – it is a status message (`string`), `rex_article::get()` then returns `null`. Get the ID from the `ART_ADDED` extension point (param `id`). `rex_extension` has no unregister, so register the listener once, not per call.
 - Modifying `rex_article` table directly via SQL – breaks the cache. Always go through `rex_article_service`.
 - Forgetting that `getValue('field')` only returns metadata (from `meta_info`-managed columns), not slice content. Slice content is fetched via `rex_article_content` (see structure-content skill).
