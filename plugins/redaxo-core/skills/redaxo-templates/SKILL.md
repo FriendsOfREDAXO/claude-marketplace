@@ -132,3 +132,8 @@ Templates run on every request unless cached. For expensive lookups (DB queries,
 - Outputting unescaped article names or category titles. Editors can put HTML there.
 - Using `$_SERVER['HTTP_HOST']` instead of `rex::getServer()` / `rex_yrewrite::getCurrentDomain()`.
 - Forgetting to handle the "article not found" case for `rex_article::get()` – it returns `null`.
+- Editing a template file of the `developer` addon and expecting an immediate effect – template code (like module input/output) is served from the database (`rex::getTable('template')`, cached by `rex_template_cache`); the files (by default under `redaxo/data/addons/developer/`) are only a mirror. The addon syncs automatically on a web request only if `sync_frontend`/`sync_backend` is enabled (default) **and** debug mode is on or the request has an admin backend session – without debug mode, anonymous visitors never trigger it, and other console commands don't either. Otherwise sync explicitly:
+  ```bash
+  bin/console developer:sync   # newer side wins; --force-files / --force-db pick a side
+  ```
+  `--force-files` also deletes templates/modules from the database that have no directory.
