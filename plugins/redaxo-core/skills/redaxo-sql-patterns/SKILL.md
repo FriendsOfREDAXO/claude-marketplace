@@ -109,7 +109,7 @@ try {
 }
 ```
 
-`rex_sql::factory()` returns the same singleton connection – no need to share an instance manually. New `rex_sql` instances reuse the underlying PDO.
+`rex_sql::factory()` returns a **new** `rex_sql` object on every call (own query, result and values), but all instances for the same DB share one PDO connection. A transaction therefore spans every `rex_sql` instance – no need to share an instance manually, and a second `beginTransaction()` on another instance throws `rex_sql_exception` ("Transaction already started").
 
 ## Schema changes – `rex_sql_table`
 
