@@ -17,7 +17,7 @@ $client = rex_elasticsearch_client::factory();  // wrong API
 
 Standalone scripts like this either fail to boot, or end up using APIs that don't exist. Even if you get them working, they're invisible in `bin/console list`, can't run as cronjobs, and aren't reviewable as part of the addon.
 
-## Required structure
+## Structure — required vs. conventional
 
 1. **File path:** any PHP file under `src/addons/<addon>/lib/` (REDAXO's autoloader scans the whole folder); `lib/command/<name>.php` is a common convention
 2. **Class name:** free choice, namespaced classes work too — the loader instantiates exactly the class given in `package.yml`. A common convention is `rex_<addon>_command_<name>` with `:` becoming `_` (e.g. command `ndcg:detail` → class `rex_elasticsearchtools_command_ndcg_detail`); the cronjob addon itself uses `rex_command_cronjob_run`
