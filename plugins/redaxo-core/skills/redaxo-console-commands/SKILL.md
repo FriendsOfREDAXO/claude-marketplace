@@ -1,6 +1,6 @@
 ---
 name: redaxo-console-commands
-description: Building CLI / diagnostic / maintenance commands for REDAXO addons using Symfony Console (rex_console_command). Covers the required class location, naming convention, package.yml registration, and SymfonyStyle helpers. Use when the user adds a CLI tool to an addon, wants a cronjob entry point, builds a diagnostic command, or asks "how do I run X from the command line in REDAXO". Replaces the anti-pattern of writing standalone bootstrap scripts in bin/.
+description: Building CLI / diagnostic / maintenance commands for REDAXO addons using Symfony Console (rex_console_command). Covers the class location, naming convention, package.yml registration, and SymfonyStyle helpers. Use when the user adds a CLI tool to an addon, wants a cronjob entry point, builds a diagnostic command, or asks "how do I run X from the command line in REDAXO". Replaces the anti-pattern of writing standalone bootstrap scripts in bin/.
 ---
 
 # REDAXO Console Commands
@@ -19,8 +19,8 @@ Standalone scripts like this either fail to boot, or end up using APIs that don'
 
 ## Required structure
 
-1. **File path:** `src/addons/<addon>/lib/command/<name>.php`
-2. **Class name:** `rex_<addon>_command_<name>` — subcommand `:` becomes `_` (e.g. command `ndcg:detail` → class `rex_elasticsearchtools_command_ndcg_detail`)
+1. **File path:** any PHP file under `src/addons/<addon>/lib/` (REDAXO's autoloader scans the whole folder); `lib/command/<name>.php` is a common convention
+2. **Class name:** free choice, namespaced classes work too — the loader instantiates exactly the class given in `package.yml`. A common convention is `rex_<addon>_command_<name>` with `:` becoming `_` (e.g. command `ndcg:detail` → class `rex_elasticsearchtools_command_ndcg_detail`); the cronjob addon itself uses `rex_command_cronjob_run`
 3. **Extends:** `rex_console_command` (REDAXO's wrapper around `Symfony\Component\Console\Command\Command`)
 4. **Registration in `package.yml`** under `console_commands:` — without this REDAXO won't expose the command. Autoloading alone is not enough.
 
@@ -76,7 +76,7 @@ console_commands:
   addon:topic:other:  rex_addon_command_topic_other
 ```
 
-The command name uses `:` as namespace separator. The class name uses `_` everywhere.
+The command name uses `:` as namespace separator. By convention, the class name uses `_` instead.
 
 ## SymfonyStyle helper (`$io`)
 
@@ -101,7 +101,7 @@ The command name uses `:` as namespace separator. The class name uses `_` everyw
 bin/console list | grep <addon>
 ```
 
-If the command isn't there, the `package.yml` entry is missing or the class name doesn't match the file path / case.
+If the command isn't there, the `package.yml` entry is missing or the addon isn't installed and active.
 
 ## Common patterns
 
@@ -125,7 +125,7 @@ bin/console addon:topic:action --alias=production
 ## Common pitfalls
 
 - Forgetting the `console_commands:` entry in `package.yml` – the file is autoloaded but never registered, so `bin/console list` doesn't show it.
-- Class name doesn't match the convention (e.g. `MyAddonCommandThing` instead of `rex_my_addon_command_thing`) – autoload silently fails.
+- Class name in `package.yml` doesn't match the class declared in `lib/` (typo, missing namespace) – `rex_console_command_loader::get()` fails on `new $class()` as soon as the command is loaded; `bin/console list` loads all commands, so it breaks too.
 - Returning a non-int from `execute()` – Symfony Console treats anything other than `0` (or the `Command::SUCCESS`/`FAILURE` constants on newer versions) as a failure.
 - Writing directly to STDOUT with `echo` instead of `$output->writeln()` / `$io->writeln()` – Symfony's `--quiet` flag has no effect.
 - Building the command but skipping the `setDescription()` – `bin/console list` shows no help text, future-you won't remember what it does.
