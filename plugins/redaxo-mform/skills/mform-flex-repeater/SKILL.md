@@ -5,7 +5,9 @@ description: Dynamic list / repeater fields in REDAXO modules with MForm – add
 
 # MForm Flex Repeater
 
-The Flex Repeater lets editors add, remove and reorder an arbitrary number of rows without Alpine.js. Data is stored as JSON in a single `REX_VALUE[n]` slot.
+> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+
+The Flex Repeater lets editors add, remove and reorder an arbitrary number of rows without Alpine.js (v9+; MForm 8.x only has the Alpine.js-based `addRepeaterElement()`). Data is stored as JSON in a single `REX_VALUE[n]` slot.
 
 ## Basic repeater
 
@@ -33,7 +35,7 @@ $mform->addFlexRepeaterElement(1,
 echo $mform->show();
 ```
 
-> **Alias:** `addRepeaterElement()` calls `addFlexRepeaterElement()` internally. Both are equivalent.
+> **Alias:** `addRepeaterElement()` calls `addFlexRepeaterElement()` internally. Both are equivalent (MForm 9).
 
 ## ID conventions inside a repeater
 
@@ -50,7 +52,7 @@ $mform->addFlexRepeaterElement(1,             // outer slot → REX_VALUE[1]
 
 No dotted prefix and no row index is needed in the template – the repeater handles row indices automatically at runtime.
 
-## __MFRID__ placeholder
+## __MFRID__ placeholder (v9+)
 
 For widget-internal IDs that must be unique per row (e.g. TinyMCE, modal IDs), use `__MFRID__` in **HTML attributes** (not in the field ID itself):
 
@@ -72,22 +74,22 @@ All standard MForm field types work. Special widgets explicitly supported:
 | Widget method | Notes |
 |---|---|
 | `addCustomLinkField()` | Single custom link (intern/extern/media/mailto/tel) |
-| `addCustomLinkMultipleField()` | Multiple links as JSON array |
-| `addMFormLinkField()` | Internal-link-focused custom link |
-| `addMediaField()` / `addMFormMediaField()` | Single media file from mediapool |
+| `addCustomLinkMultipleField()` | Multiple links as JSON array (v9+) |
+| `addMFormLinkField()` | Internal-link-focused custom link (v9+) |
+| `addMediaField()` / `addMFormMediaField()` | Single media file from mediapool (`addMFormMediaField()`: v9+) |
 | `addMedialistField()` | Multiple media files list |
 | `addImagelistField()` | Image gallery with view-toggle (grid/list) |
 | `addLinklistField()` | Multiple internal article links |
-| `addColorSwatchField()` | Color / CSS-class picker |
+| `addColorSwatchField()` | Color / CSS-class picker (v9+) |
 | `addRadioField()` | Standard radio group |
 | `addCheckboxField()` | Checkbox with Bootstrap wrapper |
-| `addCheckboxGroupField()` | Multi-checkbox storing comma-separated string |
+| `addCheckboxGroupField()` | Multi-checkbox storing comma-separated string (v9+) |
 | `addRadioImgField()` | Visual layout picker |
 | `addTextReadOnlyField()` | Read-only text display |
 | `addTextAreaReadOnlyField()` | Read-only textarea display |
 | `addHeadline()` | Static headline inside the row template |
 | `addDescription()` | Static hint text inside the row template |
-| `addModalElement()` | Sub-form in a Bootstrap modal; uses `__MFRID__` |
+| `addModalElement()` | Sub-form in a Bootstrap modal; uses `__MFRID__` (v9+) |
 | `addCollapseElement()` | Collapsible section inside a row |
 | `addTextAreaField()` with TinyMCE | Rich text editor; unique instance ID per row via `__MFRID__` |
 | MarkdownEditor | Markdown editor; unique instance ID per row via `__MFRID__` |
@@ -116,7 +118,7 @@ $mform->addRepeaterElement(2, $sectionForm, true, true, [
 
 In OUTPUT each section row contains `$section['steps']` as a normal array of step rows.
 
-## Reading repeater values in OUTPUT PHP
+## Reading repeater values in OUTPUT PHP (v9+)
 
 Use `MFormRepeaterHelper::decode()` – it handles JSON decoding, HTML entity decoding and filters disabled rows in one step.
 
@@ -203,7 +205,7 @@ Or use `rex_var_custom_medialist::getMediaOutput()` for the full widget-compatib
 | `open` | bool | `true` | Rows expanded by default |
 | `confirm_delete` | bool | `true` | Show confirmation dialog before deleting a row |
 | `min` | int | `0` | Minimum number of rows (rows below this cannot be deleted) |
-| `default_count` | int | `0` | Number of empty rows to pre-fill on first render |
+| `default_count` | int | `0` | Number of empty rows to pre-fill on first render (v9+) |
 | `sortable` | bool | `true` | Allow drag-and-drop reordering |
 
 ## Common pitfalls
