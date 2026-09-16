@@ -84,6 +84,29 @@ rex_response::sendRedirect($url, 301);
 exit; // sendRedirect already exits, but keep this for clarity
 ```
 
+## Forwards don't apply to `/media/` URLs
+
+With YRewrite's `.htaccess`, a forward whose source starts with `media/` never fires – regardless of domain and target type. The `.htaccess` rewrites every `media/…` request to the media manager (`index.php?rex_media_type=…&rex_media_file=…`); unlike the final catch-all rule, these rules have no "file exists" conditions, so they apply whether the file exists or not. Both `media_manager` and `yrewrite` hook into `PACKAGES_INCLUDED` at `rex_extension::EARLY`, and `media_manager` boots first because `yrewrite` requires it. `rex_media_manager::init()` therefore sends the file – or a 404 for a missing file – and exits before YRewrite resolves forwards (`rex_yrewrite::prepare()` → `YREWRITE_PREPARE` → `rex_yrewrite_forward::getForward()`).
+
+To redirect an old media URL, hook into `MEDIA_MANAGER_BEFORE_SEND`, which fires at the start of `rex_media_manager::sendMedia()`, before the 404:
+
+```php
+// In your addon's boot.php
+rex_extension::register('MEDIA_MANAGER_BEFORE_SEND', static function (rex_extension_point $ep) {
+    $redirects = ['old-brochure.pdf' => 42]; // media filename => target article ID
+    $file = rex_media_manager::getMediaFile();
+
+    if (isset($redirects[$file]) && !rex_media::get($file)) {
+        $url = rex_yrewrite::getFullUrlByArticleId($redirects[$file], rex_clang::getStartId(), [], '&');
+        if ('' !== $url) { // empty if the target article has no URL – keep the normal 404
+            rex_response::sendRedirect($url, rex_response::HTTP_MOVED_PERMANENTLY);
+        }
+    }
+});
+```
+
+The `rex_media::get()` check keeps the redirect inactive as soon as a file with that name is back in the mediapool.
+
 ## Detecting and recording 404s
 
 YRewrite triggers an extension point `YREWRITE_PREPARE` early in the request and sets up the 404 article when no match is found. To log 404s for analysis, hook into `RESPONSE_SHUTDOWN`:
@@ -117,3 +140,4 @@ For passthrough (slug stays visible, content from target article), set `redirect
 - Forgetting `clang_start` on multi-language sites – the forward then matches all languages and may redirect users out of their chosen language.
 - Putting forwards in `.htaccess` that editors should manage – they'll change them in the backend and wonder why nothing happens.
 - Not testing the redirect with the actual `Host` header. `curl -I -H "Host: www.example.com" https://staging.example.com/old/path` is your friend.
+- Creating a forward for an old `media/…` URL – the media manager answers first, the forward never fires. Use `MEDIA_MANAGER_BEFORE_SEND` (see above).
