@@ -17,26 +17,31 @@ Use the database layer when editors should manage entries; use the webserver lay
 Programmatic creation (e.g. during a migration):
 
 ```php
+$domain = rex_yrewrite::getDomainByName('www.example.com'); // host name without scheme
+
 $sql = rex_sql::factory();
 $sql->setTable(rex::getTable('yrewrite_forward'));
 $sql->setValue('status',     1);
-$sql->setValue('clang_start', 1);
-$sql->setValue('domain',     'www.example.com');
+$sql->setValue('domain_id',  $domain->getId());
 $sql->setValue('url',        'old/path');           // source: matches request path (no leading /)
 $sql->setValue('type',       'extern');             // 'article', 'extern', 'media'
-$sql->setValue('target',     'https://new.example.com/landing');
-$sql->setValue('redirection_code', 301);
-$sql->setValue('description', 'Old marketing landing');
+$sql->setValue('extern',     'https://new.example.com/landing');
+$sql->setValue('movetype',   301);                  // 301, 302, 303 or 307
 $sql->insert();
+
+// Forwards are matched against a cache file, not the table – rebuild it,
+// otherwise the new entry has no effect (the backend does the same after saving)
+rex_yrewrite_forward::init();
+rex_yrewrite_forward::generatePathFile();
 ```
 
-For `type: article`, set `target` to the article ID and the redirect resolves to its current URL (so it survives URL changes downstream).
+For `type: article`, set `article_id` and `clang` instead of `extern`; the redirect resolves to the article's current URL via `rex_getUrl()` (so it survives URL changes downstream).
 
-For media redirects (e.g. moving a PDF to a new path), use `type: media` and set `target` to the new media filename in the mediapool.
+For media redirects (e.g. moving a PDF to a new path), use `type: media` and set `media` to the new media filename in the mediapool.
 
 ## .htaccess patterns
 
-YRewrite ships an `.htaccess` template in `redaxo/data/addons/yrewrite/.htaccess`. Edit the project's actual `.htaccess` (in the document root), not the template, to add custom rules. Place site-specific rules **above** YRewrite's catch-all so they fire first.
+YRewrite ships an `.htaccess` template in `redaxo/src/addons/yrewrite/setup/.htaccess`, which YRewrite → Setup copies to the document root (and overwrites an existing file there). Edit the project's actual `.htaccess` (in the document root), not the template, to add custom rules. Place site-specific rules **above** YRewrite's catch-all so they fire first.
 
 Force HTTPS:
 
@@ -105,15 +110,24 @@ Editors can create forwards with custom slugs that resolve to internal articles:
 
 - Source: `team/alice` (vanity)
 - Type: `article`
-- Target: 42 (article ID for Alice's profile)
-- Code: 301 (or 200/passthrough if the vanity should stay in the URL bar – uses `redirection_code: 0`)
+- Article: 42 (`article_id` of Alice's profile, plus `clang`)
+- Code: 301 (`movetype`; the backend offers 301, 302, 303 and 307)
 
-For passthrough (slug stays visible, content from target article), set `redirection_code: 0`. YRewrite re-routes internally without sending a redirect to the browser.
+Forwards always answer with a redirect – there is no passthrough code. If the slug should stay in the URL bar, give the article that URL instead ("URL" panel in the article sidebar, type "Custom URL"), or resolve the slug yourself in `YREWRITE_PREPARE`, which YRewrite calls in the frontend when no article path matched:
+
+```php
+rex_extension::register('YREWRITE_PREPARE', static function (rex_extension_point $ep) {
+    if ('team/alice' === $ep->getParam('url')) {
+        return ['article_id' => 42]; // optional 'clang'; content is served without redirect
+    }
+    return $ep->getSubject();
+});
+```
 
 ## Common pitfalls
 
 - Using 302 for permanent moves – search engines won't update their index, hurting SEO.
-- Creating loops by setting target = source. YRewrite has loop protection but logs the issue and falls through to 404.
-- Forgetting `clang_start` on multi-language sites – the forward then matches all languages and may redirect users out of their chosen language.
+- Creating loops by setting target = source. YRewrite does not check this and logs nothing – an `extern` target pointing back to its own source URL redirects to itself.
+- Expecting a forward to match per language – matching uses only `domain_id` and `url` (plus query parameters in `url`); `clang` only selects the language of the target article for `type: article`.
 - Putting forwards in `.htaccess` that editors should manage – they'll change them in the backend and wonder why nothing happens.
 - Not testing the redirect with the actual `Host` header. `curl -I -H "Host: www.example.com" https://staging.example.com/old/path` is your friend.
