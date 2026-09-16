@@ -5,7 +5,7 @@ description: Building REDAXO module inputs with MForm – MForm::factory(), all 
 
 # MForm Basics
 
-> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+> **Written for MForm ≥ 9.0.0** (the version this plugin requires). Items marked **(v9+)** do not exist in MForm 8.x. Runtime check: `rex_version::compare(rex_addon::get('mform')->getVersion(), '9.0.0', '>=')`.
 
 MForm renders the backend input form of REDAXO modules. The PHP code is placed in the **INPUT** section of a module.
 
