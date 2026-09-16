@@ -5,7 +5,7 @@ description: Reading MForm field values in REDAXO module OUTPUT PHP – MFormOut
 
 # MForm Output Helpers
 
-> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+> **Written for MForm ≥ 9.0.0** (the version this plugin requires). Items marked **(v9+)** do not exist in MForm 8.x. Runtime check: `rex_version::compare(rex_addon::get('mform')->getVersion(), '9.0.0', '>=')`.
 
 The `MFormOutputHelper` class (namespace `FriendsOfRedaxo\MForm\Utils`) normalises all link and repeater values for use in frontend templates.
 
@@ -104,7 +104,7 @@ use FriendsOfRedaxo\MForm\Repeater\MFormRepeaterHelper;
 
 $rows = MFormRepeaterHelper::decode('REX_VALUE[1]');
 
-// Alternative (v8-kompatibel / already-decoded array; prepareItemsForOutput() itself is v9+):
+// Alternative for an already-decoded array (plain json_decode works on any version; prepareItemsForOutput() itself needs MForm ≥ 9):
 // $raw  = json_decode(html_entity_decode('REX_VALUE[1]', ENT_QUOTES | ENT_HTML5, 'UTF-8'), true) ?? [];
 // $rows = MFormRepeaterHelper::prepareItemsForOutput($raw);
 ```
@@ -127,7 +127,7 @@ foreach ($items as $item) {
 $items = MFormOutputHelper::normalizeRepeaterItems($items, ['link'], ['replace' => true]);
 ```
 
-### Complete repeater module OUTPUT example
+### Complete repeater module OUTPUT example (v9+)
 
 ```php
 use FriendsOfRedaxo\MForm\Repeater\MFormRepeaterHelper;
@@ -193,6 +193,6 @@ if (MFormOutputHelper::isFirstSlice(REX_SLICE_ID)) {
 - **Always use `createLinkData()` or `normalizeLinkData()` instead of manually parsing `redaxo://`** – the helper resolves article names, media URLs and external link targets in one call.
 - **`customlink_target` is already a ready-to-embed attribute string** (` target="_blank" rel="noopener noreferrer"`) or empty string – just echo it directly, no need to check it.
 - **`customlink_class` is a plain string** (`'internal'`, `'external'`, etc.), not an HTML class attribute string.
-- **`normalizeRepeaterItems()` does not mutate** the original array – assign the return value.
+- **`normalizeRepeaterItems()` (v9+) does not mutate** the original array – assign the return value.
 - **`mode = 'raw'`** keeps backend helper labels (article name with `[ID]` suffix) in the `name` key. Use for debugging only.
-- **Always decode repeater values with `MFormRepeaterHelper::decode('REX_VALUE[n]')`** – it handles JSON decoding, HTML entity decoding, empty-string values on fresh modules, and filtering of disabled rows in one call. Only fall back to `json_decode(html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8'), true) ?? []` when you have a v8-era already-decoded array (then post-process with `MFormRepeaterHelper::prepareItemsForOutput()`; both helpers are v9+).
+- **Always decode repeater values with `MFormRepeaterHelper::decode('REX_VALUE[n]')`** – it handles JSON decoding, HTML entity decoding, empty-string values on fresh modules, and filtering of disabled rows in one call. Only fall back to `json_decode(html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8'), true) ?? []` when you're running MForm 9+ but still hold data decoded the old (v8-era) way – then post-process it with `MFormRepeaterHelper::prepareItemsForOutput()` (both `decode()` and `prepareItemsForOutput()` require MForm ≥ 9).
