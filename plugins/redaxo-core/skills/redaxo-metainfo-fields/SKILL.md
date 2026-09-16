@@ -5,7 +5,7 @@ description: Defining and managing REDAXO metainfo fields (cat_*, art_*, med_*) 
 
 # REDAXO Metainfo Fields
 
-Metainfo fields extend the standard structure tables (`rex_article`, `rex_clang_article`, `rex_category`) with custom columns. They show up in the article/category/media edit forms in the backend and are read with `rex_article::getValue('art_<name>')`, `rex_category::getValue('cat_<name>')`, `rex_media::getValue('med_<name>')`.
+Metainfo fields add custom columns to core tables: `art_*` and `cat_*` fields to `rex_article` (categories are stored there too), `med_*` to `rex_media`, `clang_*` to `rex_clang`. They show up in the article/category/media edit forms in the backend and are read with `rex_article::getValue('art_<name>')`, `rex_category::getValue('cat_<name>')`, `rex_media::getValue('med_<name>')`.
 
 ## The `params` separator gotcha (SELECT / RADIO / CHECKBOX)
 
@@ -63,7 +63,7 @@ rex_metainfo_add_field(
 
 ## Idempotent setup pattern
 
-`rex_metainfo_add_field()` only **adds** — it silently no-ops if a field with that name already exists, and it doesn't update `params`/`default`/etc. on subsequent runs. For setup scripts that should be safe to re-run:
+`rex_metainfo_add_field()` only **adds** — if a field or column with that name already exists it returns the error message `rex_i18n::msg('minfo_field_error_unique_name')` (a string) instead of `true`, and it doesn't update `params`/`default`/etc. on subsequent runs. For setup scripts that should be safe to re-run:
 
 ```php
 $tableName = rex::getTable('metainfo_field');
@@ -108,7 +108,7 @@ $nav->get(0, 1, true, true);
 
 - Using a comma to separate options – ends up as part of the label, dropdown looks broken.
 - Forgetting the leading colon-pipe (`:–|`) for the empty placeholder – the dropdown has no "blank" first option, so categories without a chosen value can't show "(none)".
-- Calling `rex_metainfo_add_field()` twice with the same name and expecting the second call to update – it silently no-ops if the field exists.
+- Calling `rex_metainfo_add_field()` twice with the same name and expecting the second call to update – it returns the `minfo_field_error_unique_name` message instead. Check the return value with `=== true`.
 - Defining a SELECT with a SQL `params` value that returns more than 2 columns – everything past the second column is ignored.
 - Filtering navigation with `addFilter('cat_x', 1)` (no operator) when stored values are strings – `1 != '1'` in some configurations. Pass the value as the same type as stored, or use `=` operator.
 - Using metainfo for fields that should be a real relation – `be_manager_relation` (via YForm) is more powerful for FK relationships. Reserve metainfo for simple, structure-page-level annotations.
