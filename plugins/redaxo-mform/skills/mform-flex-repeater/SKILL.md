@@ -5,7 +5,7 @@ description: Dynamic list / repeater fields in REDAXO modules with MForm – add
 
 # MForm Flex Repeater
 
-> **Requires MForm ≥ 9.0.** Items marked **(v9+)** are not available in MForm 8.x (check `rex_addon::get('mform')->getVersion()`).
+> **Written for MForm ≥ 9.0.0** (the version this plugin requires). Items marked **(v9+)** do not exist in MForm 8.x. Runtime check: `rex_version::compare(rex_addon::get('mform')->getVersion(), '9.0.0', '>=')`.
 
 The Flex Repeater lets editors add, remove and reorder an arbitrary number of rows without Alpine.js (v9+; MForm 8.x only has the Alpine.js-based `addRepeaterElement()`). Data is stored as JSON in a single `REX_VALUE[n]` slot.
 
