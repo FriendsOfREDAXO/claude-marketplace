@@ -1,6 +1,6 @@
 ---
 name: redaxo-extension-points
-description: REDAXO Extension Points – the hook system for modifying core/addon behavior without patching files. Use when the user mentions rex_extension::register, hooks into events like ART_PRE_VIEW / OUTPUT_FILTER / PACKAGES_INCLUDED, or wants to extend backend pages and content.
+description: REDAXO Extension Points – the hook system for modifying core/addon behavior without patching files. Use when the user mentions rex_extension::register, hooks into events like ART_CONTENT / OUTPUT_FILTER / PACKAGES_INCLUDED, or wants to extend backend pages and content.
 ---
 
 # Extension Points (EPs)
@@ -41,16 +41,15 @@ Lower level values run first. Use `EARLY` to run before the default behavior, `L
 | EP | When | Subject | Use for |
 |---|---|---|---|
 | `OUTPUT_FILTER` | After full HTML is built | full page HTML | minify, inject scripts, replace tokens |
-| `OUTPUT_FILTER_CACHE` | Before HTML is cached | full page HTML | sanitize before persisting cache |
-| `ART_PRE_VIEW` | Before article renders | rendered article HTML | inject blocks, wrap content |
-| `ART_INIT` | Article object created | `rex_article_content` | conditionally swap template |
+| `GENERATE_FILTER` | Before the article content cache file is written | generated article content (PHP code, not yet executed) | modify what gets persisted to the cache |
+| `ART_CONTENT` | After `getArticle()` / `REX_ARTICLE[]` rendered the article content (per ctype) | rendered article HTML | inject blocks, wrap content |
+| `ART_INIT` | Article object constructed, before the article is loaded | empty string – the object is in param `article` | configure the object, e.g. slice revision (a template set here is overwritten when the article loads) |
 
 ### System lifecycle
 
 | EP | When | Use for |
 |---|---|---|
 | `PACKAGES_INCLUDED` | After all addons booted | cross-addon setup that needs siblings loaded |
-| `READY` | After core+addons are ready, before request dispatch | last-chance configuration |
 | `RESPONSE_SHUTDOWN` | After response was sent | async cleanup, stats |
 
 ### Backend / content
@@ -58,7 +57,7 @@ Lower level values run first. Use `EARLY` to run before the default behavior, `L
 | EP | When | Use for |
 |---|---|---|
 | `STRUCTURE_CONTENT_HEADER` | Backend article edit – above slices | warning banners, info |
-| `SLICE_SHOW` | Each slice in edit mode | extra controls per slice |
+| `SLICE_SHOW` | Each slice whenever a slice list is rendered – backend editor (slice HTML) and frontend cache generation (module output as PHP code) | wrap slice output; for backend-only changes to the slice preview use `SLICE_BE_PREVIEW` |
 | `MEDIA_IS_IN_USE` | Before media deletion | prevent deletion if you reference it elsewhere |
 | `CLANG_DELETED` | A language was removed | clean up your `clang`-keyed data |
 | `ART_DELETED` / `CAT_DELETED` | An article/category is removed | clean up references |
@@ -75,16 +74,17 @@ Inside the callback, the `rex_extension_point` instance carries:
 - `$ep->getName()` – the EP name (useful for shared callbacks)
 
 ```php
-rex_extension::register('ART_PRE_VIEW', function (rex_extension_point $ep) {
-    $articleId = $ep->getParam('article_id');
-    $clang     = $ep->getParam('clang');
+rex_extension::register('ART_CONTENT', function (rex_extension_point $ep) {
+    $article   = $ep->getParam('article'); // rex_article_content
+    $articleId = $article->getArticleId();
+    $clang     = $article->getClangId();
     $html      = $ep->getSubject();
 
     if ($articleId === rex_article::getNotfoundArticleId()) {
         return $html; // don't touch 404s
     }
 
-    return preg_replace('/<\/body>/', '<!-- rendered -->\n</body>', $html);
+    return '<div class="article-content">' . $html . '</div>';
 });
 ```
 
@@ -121,6 +121,6 @@ Subscribers can transform `$result` and your code continues with their version.
 ## Common pitfalls
 
 - Registering inside a function that isn't called (e.g. inside an `if (rex::isFrontend())` that fires only on frontend). Register unconditionally in `boot.php`, then guard inside the callback.
-- Forgetting to `return $ep->getSubject()` (or your modified version) – downstream listeners then see `null`.
+- Returning something other than the subject by accident (e.g. the `bool` result of a helper call, or `''`) – only `null` (or no return) keeps the subject; any other value replaces it for downstream listeners and the caller.
 - Using `OUTPUT_FILTER` for things that should be in the template – it runs on every uncached request and adds latency.
 - Heavy work in `PACKAGES_INCLUDED` slows down every request. Cache results or move into a cronjob.
