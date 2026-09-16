@@ -55,18 +55,18 @@ For media and link widgets, use the special widget syntax shown above – not pl
 
 ## Output pattern
 
-Always escape user-controlled data when rendering:
+Always escape user-controlled data when rendering. Plain `REX_VALUE[n]` is already escaped, so read the raw value with `output=html` before passing it to `rex_escape()`:
 
 ```php
 <?php
-$headline = 'REX_VALUE[1]';
-$text     = 'REX_VALUE[2]';
+$headline = 'REX_VALUE[id=1 output=html]';
+$text     = 'REX_VALUE[id=2 output=html]';
 $mediaSrc = 'REX_MEDIA[1]';
 $linkId   = (int) 'REX_LINK[1]';
 ?>
 <section class="content-block">
     <h2><?= rex_escape($headline) ?></h2>
-    <div class="text"><?= rex_escape($text, 'html_simplified') ?></div>
+    <div class="text"><?= nl2br(rex_escape($text, 'html_simplified')) ?></div>
 
     <?php if ($mediaSrc && $media = rex_media::get($mediaSrc)): ?>
         <img src="<?= rex_url::media($media->getFileName()) ?>"
@@ -87,12 +87,12 @@ $linkId   = (int) 'REX_LINK[1]';
 
 - `'html'` (default) – full HTML escaping
 - `'html_attr'` – inside HTML attributes
-- `'html_simplified'` – allow basic formatting tags (b, i, p, br, ul, ol, li, a, etc.)
+- `'html_simplified'` – like `'html'`, but keeps `<b>`, `<i>`, `<code>`, `<kbd>`, `<var>` and `<br>`
 - `'js'` – inside `<script>` blocks
 - `'css'` – inside `<style>`
 - `'url'` – for URL components
 
-For Markdown-style WYSIWYG content stored in `REX_VALUE`, use `'html_simplified'` to keep formatting while stripping dangerous tags.
+`'html_simplified'` does not strip other tags, it escapes them – WYSIWYG HTML (`<p>`, `<a>`, lists) would show up as text. Output editor HTML with `REX_VALUE[id=n output=html]`, which only neutralises `<?` / `?>` and offers no XSS protection.
 
 ## Storing structured data
 
@@ -111,6 +111,6 @@ $data = json_decode('REX_VALUE[1]', true) ?: [];
 ## Common pitfalls
 
 - Mixing `REX_VALUE[1]` and `REX_INPUT_VALUE[1]` – input form ALWAYS uses `REX_INPUT_VALUE`, output ALWAYS uses `REX_VALUE`.
-- Forgetting `rex_escape()` – any field touched by an editor must be escaped on output.
+- Forgetting `rex_escape()` – any field touched by an editor must be escaped on output. But `REX_VALUE[n]` is already escaped (and `nl2br()`'d): `rex_escape('REX_VALUE[1]')` double-escapes, so `Tom & Jerry` is displayed as `Tom &amp; Jerry`. Escape the raw `REX_VALUE[id=n output=html]` instead.
 - Hardcoding image dimensions – use `rex_media`'s `getWidth()` / `getHeight()` or the `media_manager` addon for responsive variants.
 - Querying inside output PHP for many slices on one page → N+1 problem. Cache lookups or batch them.
