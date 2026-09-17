@@ -48,9 +48,9 @@ time|name|label|format|current_time|[no_db]|[widget]|[attributes]|[notice]
 datestamp|name|label|format|[no_db]|only_empty|[modify_default]
 hidden|name|value||[no_db]
 hidden|name|key|REQUEST/GET/POST/SESSION|[no_db]
-upload|name|label|sizes|types|required|messages|[notice]|[config_json]
+upload|name|label|sizes|types|required|messages|[notice]|[config]
 be_link|name|label|[multiple]|[notice]
-be_manager_relation|name|label|table|field|type|empty_option|empty_value|size|filter|relation_table|notice
+be_manager_relation|name|label|table|field|type|empty_option|empty_value|size|filter|relation_table|[attributes]|[notice]
 be_media|name|label|preview|multiple|category|types|[notice]
 be_table|name|label|columns|[notice]|[no_db]
 fieldset|name|label|[attributes]|[options]
@@ -84,7 +84,7 @@ objparams|key|value|[init/runtime]
 - `expanded` (choice): `0`=select/multiselect, `1`=radio/checkboxes
 - `multiple` (choice): `0`=single, `1`=multiple
 - `choices` (choice): JSON, SQL, or comma-separated
-- `type` (be_manager_relation): `0`=select, `1`=select multi, `2`=popup, `3`=popup multi, `4`=inline 1:n, `5`=inline multi
+- `type` (be_manager_relation): `0`=select, `1`=select multi, `2`=popup, `3`=popup multi, `4`=1:n popup, `5`=1:n inline
 - `sizes` (upload): max KB or range `100,500`
 - `types` (upload): `.jpg,.gif,.png,.pdf`
 - `messages` (upload): `min_err,max_err,type_err,empty_err,delete_msg`
@@ -128,7 +128,7 @@ Manages relations between YForm tables.
 |---|---|
 | `table` | Target table name |
 | `field` | Display field in target table |
-| `type` | 0=single select, 1=multi select, 2=popup, 3=popup multi, 4=inline 1:n, 5=inline m:n |
+| `type` | 0=single select, 1=multi select, 2=popup, 3=popup multi, 4=1:n popup, 5=1:n inline (m:n uses type 1/3 plus `relation_table`) |
 | `empty_option` | Show empty first option |
 | `filter` | SQL WHERE filter for target records |
 
@@ -160,15 +160,15 @@ For ORM-style relation access, see the `yform-datasets` skill (`getRelatedDatase
 
 ## Field type: `upload`
 
-Configure via JSON in the `config_json` slot:
+Configure via JSON in the `config` slot (key `config` in `setTableField()` / tablesets). Keys set here override `sizes`, `types` and `messages`; `required` stays its own parameter. Note: `sizes.min`/`sizes.max` here are **bytes**, unlike the pipe-syntax `sizes` parameter above, which is **KB**:
 
 ```json
 {
-    "accept": "image/*,.pdf",
-    "max_size": 10485760,
-    "upload_folder": "media/uploads/",
+    "sizes": {"min": 0, "max": 10485760},
     "allowed_extensions": ["jpg","jpeg","png","gif","pdf"],
-    "required": true
+    "disallowed_extensions": ["exe"],
+    "check": ["multiple_extensions"],
+    "messages": {"max_error": "File too large", "type_error": "File type not allowed"}
 }
 ```
 
@@ -211,7 +211,8 @@ validate|password_policy|name|message|rules_json
 // Pipe: validate|customfunction|my_field|myclass::validate||Error message
 
 class myclass {
-    public static function validate($label, $value, $params, $return) {
+    // Called as ($name, $value, $params, $validator, $valueObjects); for several fields $name is a list and $value is keyed by name
+    public static function validate($name, $value, $params, $validator) {
         // Return true = error, false = valid
         if ($value < 10) return true;
         return false;
@@ -362,4 +363,4 @@ If `yform_tools` is installed, attribute JSON gives you these for free:
 - Missing `prio` on validators – they may fire before the value field is populated.
 - Using `unique` without `not_id` in update forms – every save fails because the value matches itself.
 - `customfunction` validator returning `true` to mean "valid" – it's the opposite: `true` = error, `false` = valid.
-- Using `validate|customfunction|...|||1` – the trailing `1` means `validate_type=post`, runs after DB write. Default (no value) is `normal`.
+- Using `validate|customfunction|...|||1` to get `validate_type=post` – only the literal strings `pre` and `post` switch the timing; `1` (or any other value) runs as `normal`. `post` runs after the value fields are processed but before any action, so nothing is written yet.
