@@ -18,7 +18,7 @@ For most use cases, you don't manipulate slices directly – the backend UI hand
 `rex_article_slice` provides one slice at a time:
 
 ```php
-$slice = rex_article_slice::getSliceById($sliceId);
+$slice = rex_article_slice::getArticleSliceById($sliceId, $clangId);
 echo $slice->getModuleId();
 echo $slice->getValue(1);   // REX_VALUE[1]
 echo $slice->getMedia(1);   // REX_MEDIA[1] – returns filename string
@@ -53,17 +53,32 @@ $data = [
     'link1'  => '5',
 ];
 
-$sliceId = rex_content_service::addSlice($articleId, $clangId, $ctype, $moduleId, $data);
+// addSlice() returns a status message, not the ID – capture the ID from SLICE_ADDED
+$sliceId = null;
+rex_extension::register('SLICE_ADDED', static function (rex_extension_point $ep) use (&$sliceId): void {
+    $sliceId = (int) $ep->getParam('slice_id');
+});
+
+rex_content_service::addSlice($articleId, $clangId, $ctype, $moduleId, $data);
+if (null === $sliceId) {
+    throw new RuntimeException('SLICE_ADDED did not fire – addSlice() failed or capturing code changed');
+}
 ```
 
 The `$data` keys are `value1`–`value20`, `media1`–`media10`, `medialist1`–`medialist10`, `link1`–`link10`, `linklist1`–`linklist10`.
 
 ## Editing / deleting
 
+There is no `rex_content_service::editSlice()`. The backend content page writes the row with `rex_sql` (and fires `SLICE_UPDATED`); the minimum is the update plus clearing the article cache:
+
 ```php
-rex_content_service::editSlice($sliceId, [
-    'value1' => 'Updated headline',
-]);
+$sql = rex_sql::factory();
+$sql->setTable(rex::getTable('article_slice'));
+$sql->setWhere(['id' => $sliceId]);
+$sql->setValue('value1', 'Updated headline');
+$sql->addGlobalUpdateFields();
+$sql->update();
+rex_article_cache::delete($articleId, $clangId);
 
 rex_content_service::deleteSlice($sliceId);
 ```
@@ -71,13 +86,20 @@ rex_content_service::deleteSlice($sliceId);
 ## Moving (re-ordering)
 
 ```php
-rex_content_service::moveSlice($sliceId, 'up');   // or 'down'
+rex_content_service::moveSlice($sliceId, $clangId, 'moveup');   // or 'movedown'
 ```
 
-For exact priority, edit `priority` directly:
+Any other direction throws `rex_exception`; moving the first slice up or the last slice down throws `rex_api_exception`.
+
+For exact priority on a new slice, pass `priority` in `$data` to `addSlice()` – it re-sorts the siblings. An existing slice has no service method for an exact priority; move it step by step:
 
 ```php
-rex_content_service::editSlice($sliceId, ['priority' => 3]);
+$slice = rex_article_slice::getArticleSliceById($sliceId, $clangId);
+$target = 3;
+$direction = $slice->getPriority() > $target ? 'moveup' : 'movedown';
+for ($i = abs($slice->getPriority() - $target); $i > 0; --$i) {
+    rex_content_service::moveSlice($sliceId, $clangId, $direction);
+}
 ```
 
 ## Cloning content between languages
@@ -145,4 +167,5 @@ $sql->setQuery('SELECT id FROM ' . rex::getTable('module') . ' WHERE name = ?', 
 $moduleId = $sql->getRows() ? (int) $sql->getValue('id') : null;
 ```
 
+- Using the return value of `addSlice()` as the slice ID – it is a status message (`string`). Get the ID from the `SLICE_ADDED` extension point (param `slice_id`). `rex_extension` has no unregister, so register the listener once, not per call.
 - Calling `getValue(0)` instead of `getValue(1)` – placeholders are 1-indexed.
