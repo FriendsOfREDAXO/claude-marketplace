@@ -37,10 +37,12 @@ $yform->setValidateField('empty', ['agree',   'You must agree to the privacy pol
 
 // Action: send mail using a configured email template
 $yform->setActionField('tpl2email', [
-    'contact_form',  // template name (managed in backend → YForm → Email Templates)
-    'email',         // sender field (used as From)
-    'name',          // sender display-name field
+    'contact_form',      // template name (managed in backend → YForm → Email Templates)
+    'info@example.com',  // recipient: fixed address, or the name of a form field holding one
+    'Website team',      // recipient display name (literal text, not a field name)
 ]);
+// There is no sender parameter: From/Reply-To come from the template. To reply to the
+// visitor, set the template's Reply-To to REX_YFORM_DATA[field="email"].
 
 // Hide the form once it was submitted successfully
 $yform->setObjectparams('form_showformafterupdate', false);
@@ -67,7 +69,7 @@ validate|empty|email|Please enter your email.
 validate|type|email|email|Please enter a valid email.
 validate|empty|message|Please enter a message.
 validate|empty|agree|You must agree to the privacy policy.
-action|tpl2email|contact_form|email|name
+action|tpl2email|contact_form|info@example.com|Website team
 action|showtext|<p>Thank you – we'll get back to you.</p>||1
 ```
 
@@ -81,9 +83,9 @@ action|showtext|<p>Thank you – we'll get back to you.</p>||1
 | `form_anchor` | `` | Anchor (`#id`) used after submit |
 | `form_name` | `formular` | Form name attribute (must be unique per page!) |
 | `form_class` | `rex-yform` | CSS class |
-| `form_wrap_id` / `form_wrap_class` | `` | Wrapper div ID/class |
-| `form_label_type` | `` | `html5` for HTML5 input attributes |
-| `form_ytemplate` | `bootstrap` | Frontend template (`bootstrap`, `classic`) |
+| `form_wrap_id` / `form_wrap_class` | `rex-yform` / `yform` | Wrapper div ID/class |
+| `form_label_type` | `html` | `html` outputs labels unescaped; any other value (e.g. `plain`) escapes them |
+| `form_ytemplate` | `bootstrap,classic` | Comma-separated ytemplate fallback chain (`default` is always appended) |
 | `form_show` | `true` | Render the form |
 | `form_showformafterupdate` | `false` | Show the form again after submit |
 | `submit_btn_label` | `Abschicken` | Submit button text |
@@ -97,7 +99,7 @@ action|showtext|<p>Thank you – we'll get back to you.</p>||1
 | `getdata` | `false` | Load existing data (for edit forms) |
 | `main_table` | `` | Table for `getdata` |
 | `main_where` | `` | WHERE clause for `getdata` |
-| `form_exit` | `true` | Stop processing after form |
+| `form_exit` | `false` | `true` = `getForm()` cleans the output buffers and calls `exit` (the `redirect` action sets it) |
 
 ## Edit existing record
 
@@ -127,7 +129,7 @@ $yform->setValueField('php', ['php_attach', 'Attach',
             $this->params["value_pool"]["files"];
     } ?>'
 ]);
-$yform->setActionField('tpl2email', ['contact_form', 'email', 'name']);
+$yform->setActionField('tpl2email', ['contact_form', 'info@example.com', 'Website team']);
 ```
 
 The `php` value field re-keys the uploaded files into the email-attachments pool that `tpl2email` reads.
@@ -200,14 +202,14 @@ $yform->setActionField('db', ['rex_tablename']);
 **Email only:**
 
 ```php
-$yform->setActionField('tpl2email', ['template_key', '', 'email_field']);
+$yform->setActionField('tpl2email', ['template_key', 'email_field']); // recipient = address in email_field
 ```
 
 **Database + Email:**
 
 ```php
 $yform->setActionField('db', ['rex_tablename']);
-$yform->setActionField('tpl2email', ['template_key', '', 'email_field']);
+$yform->setActionField('tpl2email', ['template_key', 'email_field']); // recipient = address in email_field
 ```
 
 **Show success message:**
@@ -252,7 +254,7 @@ $yform->setValidateField('empty', ['name',    'Please enter your name.']);
 $yform->setValidateField('empty', ['email',   'Please enter your email.']);
 $yform->setValidateField('type',  ['email',   'email', 'Please enter a valid email.']);
 $yform->setValidateField('empty', ['message', 'Please enter a message.']);
-$yform->setActionField('tpl2email', [$template, 'email', 'name']);
+$yform->setActionField('tpl2email', [$template, 'info@example.com', 'Website team']);
 
 echo '<a id="contact-form"></a>';
 echo $yform->getForm();
