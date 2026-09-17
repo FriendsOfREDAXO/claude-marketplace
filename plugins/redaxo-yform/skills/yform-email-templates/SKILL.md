@@ -5,7 +5,7 @@ description: YForm email templates – placeholder syntax, sending mails from fo
 
 # YForm Email Templates
 
-YForm ships its own email-template system, separate from REDAXO's content. Templates live under **YForm → Email Templates** in the backend with a key, subject, plain-text body, optional HTML body, and From/To metadata.
+YForm ships its own email-template system, separate from REDAXO's content. Templates live under **YForm → Email Templates** in the backend with a key, subject, plain-text body, optional HTML body, and From/Reply-To metadata. The recipient is not part of the template – it is set by the calling code (`tpl2email` or `mail_to`).
 
 ## Placeholder syntax
 
@@ -41,16 +41,18 @@ Substitution happens after placeholder replacement, so the literal `'REX_YFORM_D
 ```php
 $yform->setActionField('tpl2email', [
     'template_key',  // backend template key
-    '',              // sender email field (or '' to use template's From)
-    'email',         // recipient email field name
+    'email',         // recipient: fixed address, or the name of a form field holding one
+    '',              // recipient display name (literal text, not a field name)
 ]);
 ```
 
 In pipe syntax:
 
 ```
-action|tpl2email|template_key|email_sender_field|email_recipient_field
+action|tpl2email|template_key|recipient_address_or_field|[recipient_name]|[error_message_on_failure]
 ```
+
+There is no sender parameter – From and Reply-To always come from the template. If the recipient slot is neither a valid address nor the name of a form field, the mail goes to `rex::getErrorEmail()` (legacy exception: an empty recipient slot followed by an address in the name slot sends to that address).
 
 The action runs after validation passes. Multiple `tpl2email` actions per form are allowed (e.g. notify admin + send confirmation to user).
 
@@ -98,7 +100,7 @@ $yform->setValueField('php', ['php_attach', 'Attach',
             $this->params["value_pool"]["files"];
     } ?>'
 ]);
-$yform->setActionField('tpl2email', ['template_key', '', 'email']);
+$yform->setActionField('tpl2email', ['template_key', 'email']);
 ```
 
 The `php` value field re-keys uploads into the `email_attachments` pool that `tpl2email` reads.
