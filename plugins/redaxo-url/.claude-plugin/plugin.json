@@ -1,0 +1,12 @@
+{
+  "name": "redaxo-url",
+  "version": "0.1.0",
+  "description": "URL addon support for Claude Code: dataset-driven pretty URLs, profile setup, URL_PRE_SAVE hooks, and frontend resolution via Url::resolveCurrent()",
+  "author": {
+    "name": "Friends Of REDAXO"
+  },
+  "homepage": "https://github.com/tbaddade/redaxo_url",
+  "repository": "https://github.com/FriendsOfREDAXO/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["redaxo", "url", "pretty-urls", "seo", "routing", "datasets"]
+}
