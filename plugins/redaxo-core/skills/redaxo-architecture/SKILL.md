@@ -62,3 +62,4 @@ The user's project root usually contains `redaxo/` plus `assets/` (public mirror
 - Forgetting `rex::isBackend()` checks in `boot.php` – many extension points fire in both contexts.
 - Using `$_GET` / `$_POST` directly instead of `rex_request` – loses type safety and the built-in CSRF token handling.
 - Hardcoding language IDs (assuming `1 = German`). Use `rex_clang::getCurrent()` and `rex_clang::getCurrentId()`.
+- Changing `rex_config` with a direct SQL `UPDATE` on the `rex_config` table (`rex::getTable('config')`) – `rex_config` reads from the cache file `rex_path::coreCache('config.cache')` and only falls back to the table when that file is missing, so the old value stays active without any error. Values are also stored JSON-encoded. Use `rex_config::set()` (written to the table at shutdown, cache file invalidated); after an unavoidable SQL change call `rex_config::refresh()` or clear the cache.
