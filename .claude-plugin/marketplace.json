@@ -7,7 +7,7 @@
     "email": "info@redaxo.org"
   },
   "metadata": {
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
@@ -116,6 +116,18 @@
         "name": "Friends Of REDAXO"
       },
       "homepage": "https://github.com/FriendsOfREDAXO/mform",
+      "license": "MIT"
+    },
+    {
+      "name": "redaxo-ydeploy",
+      "source": "./plugins/redaxo-ydeploy",
+      "description": "YDeploy addon: setup, ydeploy:diff/migrate, schema.yml and fixtures, what travels with a deploy, Deployer 7 recipe (dep deploy/build/release)",
+      "category": "cms",
+      "tags": ["redaxo", "ydeploy", "deployer", "deployment", "migrations"],
+      "author": {
+        "name": "Friends Of REDAXO"
+      },
+      "homepage": "https://github.com/yakamara/ydeploy",
       "license": "MIT"
     }
   ]
