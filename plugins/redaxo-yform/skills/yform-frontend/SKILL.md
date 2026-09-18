@@ -77,7 +77,7 @@ action|showtext|<p>Thank you – we'll get back to you.</p>||1
 
 | Param | Default | Description |
 |---|---|---|
-| `form_action` | current URL | Form submit target |
+| `form_action` | `index.php` | Form submit target; does not preserve the current request's query string |
 | `form_action_query_params` | `[]` | Extra query params for the action URL |
 | `form_method` | `post` | HTTP method |
 | `form_anchor` | `` | Anchor (`#id`) used after submit |
@@ -243,7 +243,7 @@ Wrap the form in a module so editors can place it on any page:
 $template = trim('REX_VALUE[1]') ?: 'contact_form';
 
 $yform = rex_yform::factory();
-$yform->setObjectparams('form_name', 'contact_' . rex_article::getCurrentId());
+$yform->setObjectparams('form_name', 'contact_' . REX_SLICE_ID);
 $yform->setObjectparams('form_action', rex_getUrl());
 $yform->setObjectparams('form_anchor', 'contact-form');
 
@@ -264,11 +264,12 @@ if (1 == $yform->objparams['actions_executed']) {
 }
 ```
 
-The unique `form_name` (article-id-suffixed) prevents CSRF token collisions if multiple slices on the same page render contact forms.
+The slice-id suffix keeps `form_name` unique when several slices on the same article render this form – an article-id suffix would be identical for all of them.
 
 ## Common pitfalls
 
-- Reusing the same `form_name` across multiple form instances on one page – CSRF token collisions, the second form's submit fails silently.
+- Reusing the same `form_name` for two forms on one page – field names (`FORM[<form_name>][…]`) and the CSRF token id derive from it, so submitting one form makes the other one process the request as well. With `real_field_names` enabled, `form_name` no longer separates the inputs at all: every form reads the same top-level request keys (`send`, field names).
+- Losing GET parameters on submit – `form_action` defaults to `index.php`, and `rex_getUrl()` only appends the `$params` passed to it, so a query parameter of the current request (e.g. a detail page's `?id=`) is gone after POST. Add them with `$id = rex_request::get('id', 'int', 0); if ($id) { $yform->setObjectparams('form_action_query_params', ['id' => $id]); }` – an explicit default avoids appending `id=0` when the current request has none.
 - Sending unescaped form values to email templates – HTML email is exploitable. Use plain-text bodies, or `rex_escape()` placeholders in the HTML body.
 - Forgetting `setObjectparams('real_field_names', true)` – field input names get yform-mangled, breaking analytics and JS form-builder integrations.
 - Not handling the `actions_executed` state – the form re-renders empty after submit but no confirmation appears.
