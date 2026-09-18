@@ -42,6 +42,7 @@ Add addon-specific plugins based on what your project uses:
 | `redaxo-api-addon`    | FriendsOfRedaxo/api – Bearer-token REST API for articles/categories/slices/modules/templates/media                                                      | If you call (or extend) the `api` addon   |
 | `redaxo-search-it`    | Full-text search, indexing, search modules, highlighting, autocomplete, similarity search, extension points                                             | If `search_it` is installed               |
 | `redaxo-multiglossar` | MultiGlossar term management, multilingual glossary content, DOM-based frontend replacement, tooltip/link output, exclusion rules                       | If `multiglossar` is installed            |
+| `redaxo-developer`    | File-to-database sync of templates/modules/actions, why an edited file has no effect, `.rex_id` / `.rex_ignore`, creating items from the file system    | If `developer` is installed               |
 
 ## How it works
 
