@@ -5,6 +5,8 @@ description: Using MForm-provided YForm value types in YForm table definitions a
 
 # MForm YForm Value Types
 
+> **Written for MForm ≥ 9.0.0** (the version this plugin requires). Items marked **(v9+)** do not exist in MForm 8.x. Runtime check: `rex_version::compare(rex_addon::get('mform')->getVersion(), '9.0.0', '>=')`.
+
 MForm registers custom value types that extend the YForm field palette. They appear in the YForm Manager field type dropdown once MForm is installed.
 
 ---
@@ -14,11 +16,11 @@ MForm registers custom value types that extend the YForm field palette. They app
 | Type name | Description | Stored as |
 |---|---|---|
 | `custom_link` | Single custom link picker (intern/extern/media/mailto/tel) | String (`redaxo://12`, `https://…`, filename, `mailto:…`) |
-| `custom_link_multi` | Multiple links JSON array | JSON string (`["redaxo://12","https://…"]`) |
-| `color_swatch` | Color/CSS-class picker with swatches popup | String (hex `#2f77bc` or CSS class `.bg-primary`) |
+| `custom_link_multi` | Multiple links JSON array (v9+) | JSON string (`["redaxo://12","https://…"]`) |
+| `color_swatch` | Color/CSS-class picker with swatches popup (v9+) | String (hex `#2f77bc` or CSS class `.bg-primary`) |
 | `imagelist` | Image gallery picker (comma-separated filenames) | `img1.jpg,img2.png` |
-| `medialist` | Multi-file media picker (comma-separated filenames) | `file1.pdf,file2.pdf` |
-| `linklist` | Multiple internal article links (comma-separated IDs) | `12,14,22` |
+| `medialist` | Multi-file media picker (comma-separated filenames) (v9+) | `file1.pdf,file2.pdf` |
+| `linklist` | Multiple internal article links (comma-separated IDs) (v9+) | `12,14,22` |
 
 ---
 
@@ -96,7 +98,7 @@ if ($url) {
 
 ---
 
-## custom_link_multi
+## custom_link_multi (v9+)
 
 ### Programmatic definition (`install.php`)
 
@@ -159,7 +161,7 @@ foreach ($links as $linkStr) {
 
 ---
 
-## color_swatch
+## color_swatch (v9+)
 
 ### Programmatic definition (`install.php`)
 
@@ -251,7 +253,7 @@ foreach ($filenames as $filename) {
 
 ---
 
-## medialist
+## medialist (v9+)
 
 ### Programmatic definition (`install.php`)
 
@@ -304,7 +306,7 @@ foreach ($filenames as $filename) {
 
 ---
 
-## linklist
+## linklist (v9+)
 
 ### Programmatic definition (`install.php`)
 
@@ -356,11 +358,11 @@ foreach ($ids as $id) {
 MForm ships ytemplates for the YForm Manager list view that render these fields correctly:
 
 - `ytemplates/bootstrap/value.custom_link.tpl.php` – shows link URL + type icon
-- `ytemplates/bootstrap/value.custom_link_multi.tpl.php` – shows count + preview of links
-- `ytemplates/bootstrap/value.color_swatch.tpl.php` – shows color preview square
+- `ytemplates/bootstrap/value.custom_link_multi.tpl.php` – shows count + preview of links (v9+)
+- `ytemplates/bootstrap/value.color_swatch.tpl.php` – shows color preview square (v9+)
 - `ytemplates/bootstrap/value.imagelist.tpl.php` – shows thumbnail count
-- `ytemplates/bootstrap/value.medialist.tpl.php` – shows file count
-- `ytemplates/bootstrap/value.linklist.tpl.php` – shows article count
+- `ytemplates/bootstrap/value.medialist.tpl.php` – shows file count (v9+)
+- `ytemplates/bootstrap/value.linklist.tpl.php` – shows article count (v9+)
 
 No configuration needed – MForm registers these templates automatically.
 
