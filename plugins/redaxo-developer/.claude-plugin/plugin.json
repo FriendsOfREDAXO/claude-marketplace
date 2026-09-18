@@ -1,0 +1,12 @@
+{
+  "name": "redaxo-developer",
+  "version": "0.1.0",
+  "description": "Developer addon support for Claude Code: file-to-database synchronization, timestamp arbitration, and creating templates, modules and actions from the file system",
+  "author": {
+    "name": "Friends Of REDAXO"
+  },
+  "homepage": "https://github.com/FriendsOfREDAXO/developer",
+  "repository": "https://github.com/FriendsOfREDAXO/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["redaxo", "developer", "sync", "modules", "templates"]
+}
