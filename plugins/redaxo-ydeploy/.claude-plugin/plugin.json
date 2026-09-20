@@ -1,0 +1,12 @@
+{
+  "name": "redaxo-ydeploy",
+  "version": "0.1.0",
+  "description": "YDeploy addon support for Claude Code: setup, database migrations, fixtures, Deployer 7 deployment",
+  "author": {
+    "name": "Friends Of REDAXO"
+  },
+  "homepage": "https://github.com/yakamara/ydeploy",
+  "repository": "https://github.com/FriendsOfREDAXO/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["redaxo", "ydeploy", "deployer", "deployment", "migrations"]
+}

@@ -27,6 +27,7 @@ Add addon-specific plugins based on what your project uses:
 /plugin install redaxo-mform@redaxo-marketplace
 /plugin install redaxo-multiglossar@redaxo-marketplace
 /plugin install redaxo-search-it@redaxo-marketplace
+/plugin install redaxo-ydeploy@redaxo-marketplace
 ```
 
 ## Available Plugins
@@ -42,6 +43,7 @@ Add addon-specific plugins based on what your project uses:
 | `redaxo-api-addon`    | FriendsOfRedaxo/api – Bearer-token REST API for articles/categories/slices/modules/templates/media                                                      | If you call (or extend) the `api` addon   |
 | `redaxo-search-it`    | Full-text search, indexing, search modules, highlighting, autocomplete, similarity search, extension points                                             | If `search_it` is installed               |
 | `redaxo-multiglossar` | MultiGlossar term management, multilingual glossary content, DOM-based frontend replacement, tooltip/link output, exclusion rules                       | If `multiglossar` is installed            |
+| `redaxo-ydeploy`      | Setup, `ydeploy:diff`/`ydeploy:migrate`, schema.yml and fixtures, what travels with a deploy, Deployer 7 recipe (`dep deploy`/`build`/`release`)        | If `ydeploy` is installed                 |
 
 ## How it works
 
