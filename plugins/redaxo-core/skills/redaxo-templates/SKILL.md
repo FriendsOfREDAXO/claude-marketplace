@@ -136,4 +136,4 @@ Templates run on every request unless cached. For expensive lookups (DB queries,
   ```bash
   bin/console developer:sync   # newer side wins; --force-files / --force-db pick a side
   ```
-  `--force-files` also deletes templates/modules from the database that have no directory.
+  `--force-files` also deletes templates/modules from the database that have no directory. Prefer `touch` on the single file and a plain `developer:sync` – it wins the timestamp comparison for that one item without touching anything else. The `redaxo-developer` plugin covers the timestamp arbitration, the `git pull` trap and item creation from files in depth.
