@@ -7,7 +7,7 @@
     "email": "info@redaxo.org"
   },
   "metadata": {
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
@@ -44,6 +44,18 @@
         "name": "Friends Of REDAXO"
       },
       "homepage": "https://github.com/yakamara/redaxo_yrewrite",
+      "license": "MIT"
+    },
+    {
+      "name": "redaxo-url",
+      "source": "./plugins/redaxo-url",
+      "description": "URL addon: dataset-driven pretty URLs, profiles, URL_PRE_SAVE hooks, frontend resolution, programmatic rebuilds",
+      "category": "cms",
+      "tags": ["redaxo", "url", "pretty-urls", "seo", "routing"],
+      "author": {
+        "name": "Friends Of REDAXO"
+      },
+      "homepage": "https://github.com/tbaddade/redaxo_url",
       "license": "MIT"
     },
     {

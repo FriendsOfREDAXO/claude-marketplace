@@ -23,6 +23,7 @@ Add addon-specific plugins based on what your project uses:
 ```bash
 /plugin install redaxo-yform@redaxo-marketplace
 /plugin install redaxo-yrewrite@redaxo-marketplace
+/plugin install redaxo-url@redaxo-marketplace
 /plugin install redaxo-structure@redaxo-marketplace
 /plugin install redaxo-mform@redaxo-marketplace
 /plugin install redaxo-multiglossar@redaxo-marketplace
@@ -38,6 +39,7 @@ Add addon-specific plugins based on what your project uses:
 | `redaxo-yform`        | YForm tables, datasets (YOrm), field/validate/action reference, frontend forms, email templates, REST API                                               | If `yform` is installed                   |
 | `redaxo-mform`        | Module input forms with `MForm::factory()`, flex repeaters, custom-link/imagelist/colorswatch widgets, output helpers, MForm-provided YForm value types | If `mform` is installed                   |
 | `redaxo-yrewrite`     | Domains, pretty URLs, redirects, multi-language SEO                                                                                                     | If `yrewrite` is installed                |
+| `redaxo-url`          | URL addon: dataset-driven pretty URLs, profiles, `URL_PRE_SAVE` hooks, frontend resolution, programmatic rebuilds                                        | If `url` is installed                     |
 | `redaxo-ycom`         | Frontend user auth, login/registration/password forms, groups, media protection, OTP/2FA, tokens, SAML/OAuth2/CAS                                       | If `ycom` is installed                    |
 | `redaxo-api-addon`    | FriendsOfRedaxo/api – Bearer-token REST API for articles/categories/slices/modules/templates/media                                                      | If you call (or extend) the `api` addon   |
 | `redaxo-search-it`    | Full-text search, indexing, search modules, highlighting, autocomplete, similarity search, extension points                                             | If `search_it` is installed               |
