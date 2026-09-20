@@ -61,6 +61,8 @@ Lower level values run first. Use `EARLY` to run before the default behavior, `L
 | `MEDIA_IS_IN_USE` | Before media deletion | prevent deletion if you reference it elsewhere |
 | `CLANG_DELETED` | A language was removed | clean up your `clang`-keyed data |
 | `ART_DELETED` / `CAT_DELETED` | An article/category is removed | clean up references |
+| `PAGE_TITLE_SHOWN` | Backend – right after the page header was rendered (subject is an empty string, return HTML) | notices or toolbars below the page title |
+| `MEDIA_ADDED` | A file was added to the media pool (params carry the media data) | post-process uploads, sync metadata |
 
 The full list is documented at <https://redaxo.org/doku/main/extension-points>.
 

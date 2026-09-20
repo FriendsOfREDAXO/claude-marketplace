@@ -117,6 +117,7 @@ Stay consistent: pick either trailing-slash or no-trailing-slash per resource an
 | `BearerAuth` | Standard token-based API |
 | `BackendUser` | Routes that should only be callable when logged into the backend (cookie session) |
 | `null` | Unauthenticated public endpoint — only do this for actually public data |
+| `new BearerAuth(false)` | Any valid, active token without a scope check (v1.3+) – for self-describing endpoints like `/api/me` only; `Auth::requiresScope()` keeps such routes out of the token page's scope list. Everything that reads or writes data stays on `new BearerAuth()` |
 
 Prefer `BearerAuth` for external-facing endpoints. For internal backend tools, mirror your Bearer routes under `backend/<scope>` with `BackendUser` auth — that's the convention used by the built-in `Backend/*` packages, see `lib/RoutePackage/Backend/Clangs.php` for a tiny reference implementation that clones every Bearer route from a parent package and re-registers it with `BackendUser`.
 
@@ -168,7 +169,9 @@ For paginated lists, use `ListHelper::paginate()` / `ListHelper::wrapResponse()`
 
 The addon generates an OpenAPI spec at `?page=api/openapi` from registered routes. The third and fourth arguments to `registerRoute()` (description + custom responses) feed that generator. Spend a minute writing a meaningful description — Swagger UI uses it.
 
-The `query` and `Body` schemas you declare in `_controller` are mirrored into the spec automatically — that's why they live in the route definition and not just inside the handler.
+The `query` and `Body` schemas you declare in `_controller` are mirrored into the spec automatically — that's why they live in the route definition and not just inside the handler. They also show up in `GET /api/me` (v1.3+) for every token that holds the route's scope, so keep them accurate.
+
+Declare file uploads as `'type' => 'file'` – the spec then switches the request body to `multipart/form-data` with `format: binary`; a file field declared as `string` appears as a JSON field. Own tags need the language key `api_openapi_tag_<tag>_description` (`OpenAPIConfig`), otherwise the tag description stays empty.
 
 ## Common pitfalls
 

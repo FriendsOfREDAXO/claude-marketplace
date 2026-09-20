@@ -75,8 +75,8 @@ $addon = rex_addon::get('my_addon');
 // Note: this only works once the addon is INSTALLED — pre-install code that
 // touches vendor/ classes will silently no-op.
 
-// Register fragment directory
-rex_fragment::addDirectory($addon->getPath('fragments/'));
+// fragments/, lib/ and vendor/ are registered by the core for every installed
+// package – no rex_fragment::addDirectory() or autoloader setup needed here.
 
 if (rex::isBackend() && rex::getUser()) {
     rex_view::addCssFile($addon->getAssetsUrl('backend.css'));
@@ -91,7 +91,7 @@ require_once __DIR__ . '/functions/helpers.php';
 
 `$this` inside `boot.php` also refers to the `rex_addon` instance, so `$this->getAssetsUrl(...)` works the same as `$addon->getAssetsUrl(...)`.
 
-Classes under `lib/` are autoloaded automatically: `lib/my_addon_filter.php` → class `my_addon_filter`.
+Classes under `lib/` are autoloaded automatically: `lib/my_addon_filter.php` → class `my_addon_filter`. Namespaces work too – `rex_autoload` parses `namespace` declarations (`core/lib/autoload.php`), so PSR-4-style subdirectories need no Composer: `lib/Acme/View/Table.php` with `namespace Acme\View; class Table`. Templates and slices have no `use` context; call such classes fully qualified there (`\Acme\Lead::find()`).
 
 ## install.php / update.php / uninstall.php
 
@@ -129,6 +129,26 @@ if (rex_version::compare($installed, '1.1.0', '<')) {
         ->ensure();
 }
 ```
+
+Inside `update.php`, `getVersion()` still returns the version **before** the update – the core (install addon and `package:run-update-script`) writes the new version only afterwards.
+
+### A new option with different defaults for fresh and existing installs
+
+When a new option should be on for new sites but must not change existing ones, one default is not enough. Many addons start `update.php` with `require __DIR__ . '/install.php'` so schema code lives in one place; then the install defaults run on every update as well and `!hasConfig()` is true there too. Set the default for new installs in `install.php` and restore the old behaviour for upgrades in `update.php`, which runs afterwards and therefore wins:
+
+```php
+// install.php
+if (!$this->hasConfig('new_option')) {
+    $this->setConfig('new_option', false);   // new installs
+}
+
+// update.php – getVersion() is still the old version here
+if (rex_version::compare($this->getVersion(), '<last released version>', '<=')) {
+    $this->setConfig('new_option', true);    // existing installs keep the old behaviour
+}
+```
+
+The condition must name the **last released** version, not the upcoming one, otherwise every later update overwrites the user's own setting. Test the comparison against a few old and new version strings before shipping – a wrong operator silently flips behaviour on every existing site.
 
 ## The assets pipeline (read this!)
 
@@ -302,7 +322,7 @@ When building a widget that gets embedded on third-party sites:
 4. **Missing `$published = true`** on `rex_api_function` class → 403 from frontend.
 5. **Hardcoded API keys** → use `rex_config` instead.
 6. **Not using `rex::getTable()`** → missing table prefix breaks multi-instance setups.
-7. **Forgot fragment directory** registration in `boot.php`.
+7. **Registering `fragments/` by hand in `boot.php`** – unnecessary: `rex_package::enlist()` already calls `rex_fragment::addDirectory()` for every installed package (`core/lib/packages/package.php`), just as it adds `lib/` and `vendor/` to the autoloader. Call `addDirectory()` only for a directory outside the addon's `fragments/`.
 8. **Missing `exit`** after `rex_response::sendJson()` → REDAXO appends HTML to JSON.
 9. **Inline `<style>` or `<script>` tags** → blocked by CSP. Always external files via `rex_view::addCssFile()` / `rex_view::addJsFile()`.
 10. **Top-level `page:` with subpages but no `pages/index.php`** → REDAXO errors on the main entry ("page path ... neither exists ..."). Add a dispatcher (`echo rex_view::title(...); rex_be_controller::includeCurrentPageSubPath();`).
@@ -310,6 +330,8 @@ When building a widget that gets embedded on third-party sites:
 12. **Hardcoding asset paths** instead of `rex_url::addonAssets()` – breaks subdirectory deployments.
 13. **Skipping `perm:` declarations** – any backend user can then access the page.
 14. **Backend download links broken by PJAX** – the backend uses PJAX, which intercepts `<a href>` clicks and loads the response into the current page instead of triggering a download. `rex_api_function` returning binary data doesn't help (REDAXO expects a `rex_api_result` object, not raw output), and `target="_blank"` is unreliable across PJAX configurations. For small payloads (SVG, CSV, generated text) the cleanest fix is to inline the data as a `data:` URL on the link and set `download="filename.ext"` — no server round-trip, PJAX leaves it alone:
+15. **Validating a redirect target with `parse_url($t, PHP_URL_HOST)` alone** – `javascript:alert(1)` and `data:…` have no host and pass a "no host, so it's relative" check. Accept a relative target only when it starts with a single `/` and has no scheme: `str_starts_with($t, '/') && !str_starts_with($t, '//') && null === parse_url($t, PHP_URL_SCHEME)`.
+16. **Expecting the `developer` addon to version slice content** – it syncs templates, modules and actions to disk; `rex_article_slice` rows stay in the database and need their own migration or deploy path.
 
     ```php
     $svg = '<svg ...>...</svg>';

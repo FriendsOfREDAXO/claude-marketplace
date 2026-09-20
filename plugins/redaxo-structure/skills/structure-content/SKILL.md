@@ -67,6 +67,8 @@ if (null === $sliceId) {
 
 The `$data` keys are `value1`–`value20`, `media1`–`media10`, `medialist1`–`medialist10`, `link1`–`link10`, `linklist1`–`linklist10`.
 
+Modules do not have to start at `value1` – the YForm Formbuilder module, for example, keeps its form definition in `value3`. Tooling that walks slices (export, search, migration) must cover all twenty `value` slots plus the media and link columns, or it silently misses content.
+
 ## Editing / deleting
 
 There is no `rex_content_service::editSlice()`. The backend content page writes the row with `rex_sql` (and fires `SLICE_UPDATED`); the minimum is the update plus clearing the article cache:
