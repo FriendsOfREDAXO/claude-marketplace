@@ -41,6 +41,8 @@ $url = rex_getUrl($articleId, $clangId);
 
 Use `getFullUrlByArticleId()` for anything that leaves the page (canonical tags, og:url, hreflang alternates, sitemap entries, email confirmations). Use `rex_getUrl()` for in-page links – there is no separate path-only helper.
 
+`getFullUrlByArticleId($id, $clang, $params, $separator)` joins query parameters with `&amp;` by default. That is right for HTML output; for a `Location` header, JSON, or a value you escape afterwards pass `'&'`, otherwise `rex_escape()` produces `&amp;amp;`.
+
 ## Multi-language URLs
 
 Each domain maps to one or more languages. The default language usually has no path prefix; alternate languages get a prefix matching their `code` (e.g. `/en/about`, `/fr/about`).
@@ -98,3 +100,4 @@ if ($other) {
 - Hardcoding language codes in URL paths – fetch them via `rex_clang::get($id)->getCode()`.
 - Running multiple domains in dev without `/etc/hosts` entries – YRewrite picks the wrong domain and routing silently goes to the default.
 - Forgetting to set up the 404 article per domain. Without one, REDAXO falls back to the global 404, which may be in the wrong language.
+- Using `rex_yrewrite::getHost()` as a trust anchor – it returns `$_SERVER['HTTP_X_FORWARDED_HOST']` or `HTTP_HOST`, a header the caller controls, so comparing a redirect target against it proves nothing. Use `rex_yrewrite::getCurrentDomain()?->getHost()`, which comes from the configured domain.

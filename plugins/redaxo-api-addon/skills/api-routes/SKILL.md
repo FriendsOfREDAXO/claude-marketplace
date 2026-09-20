@@ -1,6 +1,6 @@
 ---
 name: api-routes
-description: Calling the FriendsOfRedaxo/api REST endpoints (v1.2+) — Bearer + Backend-Session auth, the route table for articles/categories/slices/modules/templates/languages/media/users/metainfo, the slice POST schema, OpenAPI spec, the unified `{data, meta}` list format, and a 401/404/405/500 diagnostic flow. Covers the Backend-mirror under `/api/backend/...`, multipart media upload, metainfo values for articles/categories/media/clangs, and yrewrite cache invalidation. Use when the user calls the api addon over HTTP, hits a confusing 401/404/405, syncs articles between systems via this API, builds tooling around it, or says "API-Aufruf", "REST-API ansprechen", "Bearer-Token", "Slice anlegen per API", "Artikel über API erzeugen".
+description: Calling the FriendsOfRedaxo/api REST endpoints (v1.2+) — Bearer + Backend-Session auth, the route table for articles/categories/slices/modules/templates/languages/media/users/metainfo, the slice POST schema, the `/api/me` discovery endpoint (v1.3+), OpenAPI spec, the unified `{data, meta}` list format, and a 401/404/405/500 diagnostic flow. Covers the Backend-mirror under `/api/backend/...`, multipart media upload, metainfo values for articles/categories/media/clangs, and yrewrite cache invalidation. Use when the user calls the api addon over HTTP, hits a confusing 401/404/405, syncs articles between systems via this API, builds tooling around it, or says "API-Aufruf", "REST-API ansprechen", "Bearer-Token", "Slice anlegen per API", "Artikel über API erzeugen".
 ---
 
 # REDAXO `api` Addon – Calling the API (v1.2+)
@@ -17,6 +17,21 @@ Canonical reference (always trust over this skill if they disagree): the addon `
 - Two auth classes:
   - `BearerAuth` — token-based frontend API (default for most routes)
   - `BackendUser` — uses the REDAXO backend session cookie. Every Bearer route is automatically mirrored under `/api/backend/...` with `BackendUser` auth and a `backend/<scope>` scope name. These routes follow the backend user's REDAXO permissions (admin / structure / media / clang / etc.) — no token needed.
+
+### Discovery: `GET /api/me` (v1.3+)
+
+First call against any unfamiliar instance – do not guess paths from scope names (`media/get` is `/api/media/{filename}/info`):
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" https://example.org/api/me
+```
+
+- Lists **only** the endpoints whose scope the token has, with path, methods, description and parameters (`path_parameters`, `query`, `body` incl. type, `required`, default). Routes of other addons appear too.
+- Needs no scope of its own (`new BearerAuth(false)`); a token without scopes sees exactly one endpoint, `me`.
+- `required` follows the validation: a field without an explicit `required` key **is required**.
+- `?format=openapi` returns the same set as a filtered OpenAPI 3.0 spec.
+- `GET /api/backend/me` is the backend-session variant, unfiltered – permissions are checked per request, `meta.note` says so.
+- `meta.auth.scopes` are the token's **stored** scopes. A scope listed there without a matching endpoint means the route no longer exists, e.g. after a rename in an update.
 
 ### Apache: pass through `Authorization`
 
@@ -138,15 +153,17 @@ Common query parameters on list endpoints:
 
 | Status | Body                                                                     | Meaning                                                                |
 |--------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
-| 401    | `{"error":"Authorization failed"}`                                       | Bearer auth failed: token invalid, or scope not in token's scope list  |
+| 401    | `{"error":"Authorization failed","required_scope":"users/list"}`     | Token valid and active, **scope missing** (v1.3+ adds `required_scope`) |
+| 401    | `{"error":"Authorization failed"}`                                       | Token missing, wrong, or **deactivated** – `required_scope` only appears for a valid token |
 | 404    | `{"error":"Route not found"}`                                            | No route matched the path                                              |
 | 405    | `{"error":"Method not allowed","allowed":[...]}`                         | Path matched but the HTTP method is wrong; `allowed` lists valid ones  |
 | 500    | `{"error":"Internal server error","message":"..."}`                      | Controller threw — check `var/log/system.log` for the exception        |
 
 Quick path:
 
-1. **401 `Authorization failed`** → `BearerAuth`: extend the token's scope list to include the route's scope. `BackendUser` route: log into the backend first.
-2. **404 `Route not found`** → check the path against `lib/RoutePackage/*.php`.
+0. **`GET /api/me`** (v1.3+) → shows the token's scopes and every permitted endpoint with path and parameters, and settles "wrong path" versus "missing scope" in one call.
+1. **401 `Authorization failed`** **with** `required_scope` → extend the token's scope list. **Without** it → the token is missing, wrong or deactivated (status 0). `BackendUser` route: log into the backend first.
+2. **404 `Route not found`** → check path, method and trailing slash against `/api/me` or `lib/RoutePackage/*.php` before suspecting the token.
 3. **405 `Method not allowed`** → use one of the methods in `allowed[]`.
 4. **500 `Internal server error`** → `tail var/log/system.log` for the underlying exception. The `message` field also includes the immediate error string.
 5. **HTTP 201 but frontend 404?** → yrewrite path cache stale (see below).
@@ -202,7 +219,12 @@ Field definitions are managed via `/api/metainfo/fields` (admin-only when called
 
 ## OpenAPI spec
 
-Available in the backend at `?page=api/openapi`. Generated from the route definitions via `OpenAPIConfig`. External consumers (Postman, OpenAPI generator): the JSON spec is only viewable when authenticated via backend login — Swagger UI renders client-side.
+Generated from the route definitions via `OpenAPIConfig`. Two ways to get it:
+
+- Backend: `?page=api/openapi` (Swagger UI), raw JSON with `&load_config=1` – **all** routes, needs a backend login with the `api[]` permission.
+- Per token: `GET /api/me?format=openapi` (v1.3+) – **filtered** to the routes the token may call. This is the way for Postman, client generators and agents without a backend login.
+
+Parameters and body fields carry type and default in their `schema` (v1.3+), so client generators work. What the spec lacks are response schemas: list routes answer `{data, meta}`, detail routes the flat object – see "List response format" above.
 
 ## Common pitfalls
 
